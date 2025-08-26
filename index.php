@@ -12,8 +12,14 @@ get_header(); ?>
 
 <div class="site-content">
     <div class="container">
-        <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
-            <main class="content-area" style="flex: 1; min-width: 300px;">
+        <?php if (is_home() || is_front_page()) : ?>
+            <!-- 首页：全宽布局，无侧边栏 -->
+            <main class="content-area" style="max-width: 800px; margin: 0 auto;">
+        <?php else : ?>
+            <!-- 其他页面：包含侧边栏的布局 -->
+            <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+                <main class="content-area" style="flex: 1; min-width: 300px;">
+        <?php endif; ?>
                 
                 <?php if (have_posts()) : ?>
                     
@@ -169,9 +175,10 @@ get_header(); ?>
 
             </main>
 
-            <?php get_sidebar(); ?>
-            
-        </div>
+            <?php if (!(is_home() || is_front_page())) : ?>
+                <?php get_sidebar(); ?>
+            </div>
+            <?php endif; ?>
     </div>
 </div>
 
