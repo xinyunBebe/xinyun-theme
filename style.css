@@ -24,6 +24,7 @@ body {
     line-height: 1.6;
     color: #333;
     background-color: #fff;
+    padding-top: 70px; /* 为固定头部预留空间 */
 }
 
 /* 容器样式 */
@@ -37,11 +38,60 @@ body {
 .site-header {
     background: #fff;
     border-bottom: 1px solid #eee;
-    padding: 1rem 0;
+    padding: 0.75rem 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+
+/* Header内容布局 */
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    min-height: 45px;
+}
+
+/* 左侧品牌区域 */
+.site-branding {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+/* Logo占位符样式 */
+.site-logo-placeholder {
+    flex-shrink: 0;
+}
+
+.logo-placeholder {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #007cba, #005a87);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    border-radius: 8px;
+    letter-spacing: 1px;
+}
+
+/* 网站标题区域 */
+.site-title-area {
+    flex-shrink: 0;
 }
 
 .site-title {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: bold;
     margin: 0;
 }
@@ -52,10 +102,17 @@ body {
 }
 
 /* 导航样式 */
+.main-navigation {
+    display: flex;
+    justify-content: flex-start;
+}
+
 .main-navigation ul {
     list-style: none;
     display: flex;
     gap: 2rem;
+    margin: 0;
+    padding: 0;
 }
 
 .main-navigation a {
@@ -63,10 +120,83 @@ body {
     color: #333;
     font-weight: 500;
     transition: color 0.3s ease;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    position: relative;
 }
 
 .main-navigation a:hover {
     color: #007cba;
+    background: rgba(0, 124, 186, 0.1);
+}
+
+/* 移动端菜单切换按钮 */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.75rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.menu-toggle:hover {
+    background: rgba(0, 124, 186, 0.1);
+}
+
+.menu-toggle-icon {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.menu-toggle-icon span {
+    width: 20px;
+    height: 2px;
+    background: #333;
+    transition: all 0.3s ease;
+}
+
+.menu-toggle-text {
+    display: none; /* 隐藏菜单文字 */
+}
+
+/* Header操作按钮区域 */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    margin-left: auto; /* 自动推到右侧 */
+}
+
+.search-toggle,
+.theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.75rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: #333;
+}
+
+.search-toggle:hover,
+.theme-toggle:hover {
+    background: rgba(0, 124, 186, 0.1);
+    color: #007cba;
+}
+
+.theme-toggle .theme-icon {
+    transition: opacity 0.3s ease;
 }
 
 /* 主内容区域 */
@@ -139,9 +269,99 @@ body {
         padding: 0 15px;
     }
     
+    /* 移动端头部布局调整 */
+    .header-content {
+        gap: 0.5rem;
+        justify-content: space-between;
+        position: relative;
+    }
+    
+    /* 移动端菜单按钮显示在最左侧 */
+    .menu-toggle {
+        display: flex;
+        order: 1;
+    }
+    
+    /* 移动端品牌区域居中 */
+    .site-branding {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        gap: 0;
+        order: 2;
+    }
+    
+    /* 隐藏移动端标题 */
+    .site-title-area {
+        display: none;
+    }
+    
+    /* 移动端logo居中且稍大一些 */
+    .logo-placeholder {
+        width: 36px;
+        height: 36px;
+        font-size: 0.65rem;
+    }
+    
+    /* 右侧按钮区域 */
+    .header-actions {
+        order: 3;
+        margin-left: 0;
+    }
+    
+    /* 移动端导航 */
+    .main-navigation {
+        order: 4;
+        width: 100%;
+        flex: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+    }
+    
     .main-navigation ul {
+        display: none;
         flex-direction: column;
-        gap: 1rem;
+        gap: 0;
+        width: 100%;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 0 0 8px 8px;
+        padding: 1rem 0;
+        margin: 0;
+    }
+    
+    .main-navigation ul.show {
+        display: flex;
+    }
+    
+    .main-navigation li {
+        width: 100%;
+    }
+    
+    .main-navigation a {
+        display: block;
+        padding: 1rem 2rem;
+        border-radius: 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .main-navigation a:hover {
+        background: rgba(0, 124, 186, 0.05);
+    }
+    
+    /* 移动端操作按钮调整 */
+    .header-actions {
+        gap: 0.25rem;
+    }
+    
+    .search-toggle,
+    .theme-toggle {
+        padding: 0.5rem;
     }
     
     .widget-area {
