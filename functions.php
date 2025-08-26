@@ -323,8 +323,83 @@ add_action('init', 'xinyun_init_theme_components');
  * 渲染首页轮播图（兼容函数）
  */
 function xinyun_render_carousel(): string {
-    $carousel_manager = Xinyun_Carousel_Manager::get_instance();
-    return $carousel_manager->render_homepage_carousel();
+    try {
+        $carousel_manager = Xinyun_Carousel_Manager::get_instance();
+        $result = $carousel_manager->render_homepage_carousel();
+        
+        // 如果没有内容，返回调试信息
+        if (empty($result)) {
+            if (current_user_can('manage_options')) {
+                $theme_options = Xinyun_Theme_Options::get_instance();
+                $carousel_type = $theme_options->get_option('homepage_carousel_type', 'post');
+                $all_options = $theme_options->get_options();
+                
+                $debug_info = '<div style="padding: 20px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; margin-bottom: 20px;">
+                    <h3>🔧 轮播图调试信息</h3>
+                    <p><strong>当前轮播图类型：</strong>' . esc_html($carousel_type) . '</p>';
+                
+                if ($carousel_type === 'custom') {
+                    $custom_slides = $all_options['homepage_carousel_custom_slides'] ?? [];
+                    $debug_info .= '<p><strong>自定义轮播图数量：</strong>' . count($custom_slides) . '</p>';
+                    if (!empty($custom_slides)) {
+                        $debug_info .= '<p><strong>轮播图配置：</strong></p><ul>';
+                        foreach ($custom_slides as $i => $slide) {
+                            $debug_info .= '<li>轮播图 ' . ($i + 1) . ': 图片ID=' . ($slide['image_id'] ?? '无') . ', 文章ID=' . ($slide['post_id'] ?? '无') . '</li>';
+                        }
+                        $debug_info .= '</ul>';
+                    }
+                } elseif ($carousel_type === 'post') {
+                    $custom_slides = $all_options['homepage_carousel_custom_slides'] ?? [];
+                    $debug_info .= '<p><strong>自定义轮播图配置数量：</strong>' . count($custom_slides) . '</p>';
+                    
+                    if (!empty($custom_slides)) {
+                        $debug_info .= '<p><strong>轮播图配置：</strong></p><ul>';
+                        foreach ($custom_slides as $i => $slide) {
+                            $has_image = !empty($slide['image_id']) && wp_get_attachment_image_url($slide['image_id'], 'large');
+                            $has_post = !empty($slide['post_id']) && get_post($slide['post_id']);
+                            $debug_info .= '<li>轮播图 ' . ($i + 1) . ': 图片=' . ($has_image ? '✅' : '❌') . ', 文章=' . ($has_post ? '✅' : '❌') . '</li>';
+                        }
+                        $debug_info .= '</ul>';
+                    } else {
+                        $posts = get_posts([
+                            'post_type' => 'post',
+                            'posts_per_page' => 5,
+                            'post_status' => 'publish',
+                            'meta_query' => [['key' => '_thumbnail_id', 'compare' => 'EXISTS']]
+                        ]);
+                        $debug_info .= '<p><strong>可用的带特色图片的文章数量：</strong>' . count($posts) . '</p>';
+                    }
+                }
+                
+                $debug_info .= '<p><strong>说明：</strong></p>
+                    <ul>
+                        <li><strong>智能轮播图</strong>：优先使用自定义配置，不足时自动补充文章</li>
+                        <li><strong>自定义轮播图</strong>：严格按照用户配置显示</li>
+                    </ul>
+                    <p>如果轮播图未显示，请检查：</p>
+                    <ul>
+                        <li>是否已在首页设置中配置了自定义轮播图</li>
+                        <li>配置的图片是否有效</li>
+                        <li>如果指定了文章ID，文章是否存在且已发布</li>
+                    </ul>
+                    <p><a href="' . admin_url('themes.php?page=xinyun-theme-options#homepage-settings') . '">前往主题设置配置轮播图</a></p>
+                </div>';
+                
+                return $debug_info;
+            }
+        }
+        
+        return $result;
+    } catch (Exception $e) {
+        if (current_user_can('manage_options')) {
+            return '<div style="padding: 20px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px; margin-bottom: 20px;">
+                <h3>❌ 轮播图错误</h3>
+                <p>错误信息：' . esc_html($e->getMessage()) . '</p>
+                <p><a href="' . admin_url('themes.php?page=xinyun-theme-options#homepage-settings') . '">前往主题设置检查配置</a></p>
+            </div>';
+        }
+        return '';
+    }
 }
 
 /**

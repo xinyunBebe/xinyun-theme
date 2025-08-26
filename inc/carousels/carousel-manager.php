@@ -78,6 +78,7 @@ class Xinyun_Carousel_Manager {
         // 加载具体轮播图类型
         $carousel_files = [
             'post-carousel.php',
+            'custom-carousel.php',
             // 未来可以添加更多轮播图类型文件
             // 'product-carousel.php',
             // 'gallery-carousel.php',
@@ -95,8 +96,11 @@ class Xinyun_Carousel_Manager {
      * 注册默认轮播图类型
      */
     private function register_default_carousels(): void {
-        // 注册文章轮播图
+        // 注册文章轮播图 - 使用自定义轮播图配置，但可以自动补充文章
         $this->register('post', new Xinyun_Post_Carousel());
+        
+        // 注册自定义轮播图 - 严格按照用户配置显示
+        $this->register('custom', new Xinyun_Custom_Carousel());
         
         // 未来可以注册更多类型
         // $this->register('product', new Xinyun_Product_Carousel());
@@ -160,6 +164,12 @@ class Xinyun_Carousel_Manager {
         // 获取主题设置中选择的轮播图类型
         $carousel_type = $theme_options->get_option('homepage_carousel_type', 'post');
         
+        // 调试信息（仅管理员可见）
+        if (current_user_can('manage_options') && WP_DEBUG) {
+            error_log('Xinyun Carousel Debug: Type = ' . $carousel_type);
+            error_log('Xinyun Carousel Debug: Available types = ' . implode(', ', array_keys($this->carousels)));
+        }
+        
         // 如果设置为不显示
         if ($carousel_type === 'none') {
             return '';
@@ -168,6 +178,9 @@ class Xinyun_Carousel_Manager {
         $carousel = $this->get_carousel($carousel_type);
         
         if (!$carousel) {
+            if (current_user_can('manage_options') && WP_DEBUG) {
+                error_log('Xinyun Carousel Debug: Carousel type "' . $carousel_type . '" not found');
+            }
             return '';
         }
         
@@ -192,7 +205,14 @@ class Xinyun_Carousel_Manager {
         $carousel->enqueue_assets();
         
         // 渲染轮播图
-        return $carousel->render($final_options);
+        $result = $carousel->render($final_options);
+        
+        // 调试信息
+        if (current_user_can('manage_options') && WP_DEBUG) {
+            error_log('Xinyun Carousel Debug: Render result length = ' . strlen($result));
+        }
+        
+        return $result;
     }
     
     /**

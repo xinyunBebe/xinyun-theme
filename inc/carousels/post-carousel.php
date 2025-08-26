@@ -30,14 +30,14 @@ class Xinyun_Post_Carousel extends Xinyun_Carousel_Base {
      * 
      * @var string
      */
-    protected string $name = '文章轮播图';
+    protected string $name = '智能轮播图';
     
     /**
      * 轮播图描述
      * 
      * @var string
      */
-    protected string $description = '展示最新发布的文章，包含特色图片、标题和摘要';
+    protected string $description = '优先使用自定义轮播图配置，不足时自动补充最新文章';
     
     /**
      * 默认配置选项
@@ -59,44 +59,121 @@ class Xinyun_Post_Carousel extends Xinyun_Carousel_Base {
     
     /**
      * 获取轮播图数据
-     * 获取最新的几篇包含特色图片的文章
+     * 优先使用主题设置中的自定义轮播图配置，如果没有则使用最新文章
      * 
      * @return array
      */
     public function get_slides(): array {
-        $options = $this->get_options();
+        // 获取主题设置
+        $theme_options = Xinyun_Theme_Options::get_instance();
+        $posts_per_page = $theme_options->get_option('homepage_carousel_posts_count', 5);
         
-        $posts = get_posts([
-            'post_type' => 'post',
-            'posts_per_page' => $options['posts_per_page'],
-            'post_status' => 'publish',
-            'meta_query' => [
-                [
-                    'key' => '_thumbnail_id',
-                    'compare' => 'EXISTS'
-                ]
-            ],
-            'orderby' => 'date',
-            'order' => 'DESC'
-        ]);
-
+        // 首先尝试获取自定义轮播图配置
+        $all_options = $theme_options->get_options();
+        $custom_slides = $all_options['homepage_carousel_custom_slides'] ?? [];
+        
         $slides = [];
         
-        foreach ($posts as $post) {
-            $thumbnail_id = get_post_thumbnail_id($post->ID);
-            $image_url = wp_get_attachment_image_url($thumbnail_id, 'xinyun-featured');
+        // 如果有自定义轮播图配置，使用自定义配置
+        if (!empty($custom_slides)) {
+            foreach ($custom_slides as $slide_config) {
+                // 获取图片URL
+                $image_url = '';
+                if (!empty($slide_config['image_id'])) {
+                    $image_url = wp_get_attachment_image_url($slide_config['image_id'], 'large');
+                }
+                
+                // 如果有文章ID，获取文章信息
+                $post_data = [];
+                if (!empty($slide_config['post_id'])) {
+                    $post = get_post($slide_config['post_id']);
+                    if ($post && $post->post_status === 'publish') {
+                        $post_data = [
+                            'title' => get_the_title($post),
+                            'excerpt' => wp_trim_words(get_the_excerpt($post), 20, '...'),
+                            'url' => get_permalink($post),
+                            'date' => get_the_date('Y年n月j日', $post),
+                            'category' => ''
+                        ];
+                        
+                        $categories = get_the_category($post->ID);
+                        if (!empty($categories)) {
+                            $post_data['category'] = $categories[0]->name;
+                        }
+                        
+                        // 如果没有自定义图片，尝试使用文章特色图片
+                        if (empty($image_url)) {
+                            $featured_image = get_the_post_thumbnail_url($post, 'large');
+                            if ($featured_image) {
+                                $image_url = $featured_image;
+                            }
+                        }
+                    }
+                }
+                
+                // 只有当有图片时才添加到轮播图中
+                if (!empty($image_url)) {
+                    $slides[] = [
+                        'id' => $slide_config['post_id'] ?? 'custom_' . uniqid(),
+                        'title' => $post_data['title'] ?? '轮播图',
+                        'excerpt' => $post_data['excerpt'] ?? '',
+                        'url' => $post_data['url'] ?? '#',
+                        'image' => $image_url,
+                        'date' => $post_data['date'] ?? '',
+                        'category' => $post_data['category'] ?? ''
+                    ];
+                }
+                
+                // 限制轮播图数量
+                if (count($slides) >= $posts_per_page) {
+                    break;
+                }
+            }
+        }
+        
+        // 如果自定义轮播图不足，用最新文章补充
+        if (count($slides) < $posts_per_page) {
+            $remaining_count = $posts_per_page - count($slides);
             
-            if ($image_url) {
-                $categories = get_the_category($post->ID);
-                $slides[] = [
-                    'id' => $post->ID,
-                    'title' => get_the_title($post->ID),
-                    'excerpt' => wp_trim_words(get_the_excerpt($post->ID), 20, '...'),
-                    'url' => get_permalink($post->ID),
-                    'image' => $image_url,
-                    'date' => get_the_date('Y年n月j日', $post->ID),
-                    'category' => $categories[0]->name ?? ''
-                ];
+            $posts = get_posts([
+                'post_type' => 'post',
+                'posts_per_page' => $remaining_count,
+                'post_status' => 'publish',
+                'orderby' => 'date',
+                'order' => 'DESC'
+            ]);
+            
+            foreach ($posts as $post) {
+                // 检查是否已经在自定义轮播图中
+                $already_exists = false;
+                foreach ($slides as $existing_slide) {
+                    if ($existing_slide['id'] == $post->ID) {
+                        $already_exists = true;
+                        break;
+                    }
+                }
+                
+                if (!$already_exists) {
+                    // 优先使用特色图片，如果没有则跳过
+                    $thumbnail_id = get_post_thumbnail_id($post->ID);
+                    $image_url = '';
+                    if ($thumbnail_id) {
+                        $image_url = wp_get_attachment_image_url($thumbnail_id, 'large');
+                    }
+                    
+                    if ($image_url) {
+                        $categories = get_the_category($post->ID);
+                        $slides[] = [
+                            'id' => $post->ID,
+                            'title' => get_the_title($post->ID),
+                            'excerpt' => wp_trim_words(get_the_excerpt($post->ID), 20, '...'),
+                            'url' => get_permalink($post->ID),
+                            'image' => $image_url,
+                            'date' => get_the_date('Y年n月j日', $post->ID),
+                            'category' => $categories[0]->name ?? ''
+                        ];
+                    }
+                }
             }
         }
 
