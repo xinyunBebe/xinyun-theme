@@ -84,6 +84,9 @@ function xinyun_setup() {
 
     // 启用响应式嵌入
     add_theme_support('responsive-embeds');
+    
+    // 确保admin bar正常工作
+    add_theme_support('admin-bar', array('callback' => '__return_false'));
 
     // 设置内容宽度
     if (!isset($content_width)) {

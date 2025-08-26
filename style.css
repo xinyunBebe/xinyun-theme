@@ -34,6 +34,17 @@ body {
     flex-direction: column;
 }
 
+/* 当WordPress admin bar存在时调整顶部间距 */
+body.admin-bar {
+    padding-top: 102px; /* 70px (header) + 32px (admin bar) */
+}
+
+@media screen and (max-width: 782px) {
+    body.admin-bar {
+        padding-top: 116px; /* 70px (header) + 46px (admin bar on mobile) */
+    }
+}
+
 /* 整站容器 */
 .site {
     display: flex;
@@ -41,6 +52,42 @@ body {
     min-height: 100vh;
     margin-top: -70px; /* 抵消body的padding-top */
     padding-top: 70px; /* 重新添加padding */
+}
+
+/* 当WordPress admin bar存在时，调整site容器 */
+body.admin-bar .site {
+    margin-top: -102px; /* 抵消body的padding-top (70px + 32px) */
+    padding-top: 102px; /* 重新添加padding */
+}
+
+@media screen and (max-width: 782px) {
+    body.admin-bar .site {
+        margin-top: -116px; /* 抵消body的padding-top (70px + 46px) */
+        padding-top: 116px; /* 重新添加padding */
+    }
+}
+
+/* 确保所有固定和绝对定位的元素都不会遮挡admin bar */
+body.admin-bar .site-header {
+    /* admin bar的z-index是99999，我们的header应该低于它 */
+    z-index: 999;
+}
+
+/* 确保轮播图和其他内容元素的z-index不会太高 */
+.xinyun-carousel,
+.carousel-container,
+.carousel-slide {
+    z-index: 1 !important;
+}
+
+.carousel-arrow,
+.carousel-pagination {
+    z-index: 2 !important;
+}
+
+/* 确保下拉菜单等交互元素在合理范围内 */
+.main-navigation .sub-menu {
+    z-index: 100;
 }
 
 /* 容器样式 */
@@ -60,9 +107,20 @@ body {
     left: 0;
     right: 0;
     width: 100%;
-    z-index: 1000;
+    z-index: 999; /* 低于admin bar的z-index (99999) */
     transition: all 0.3s ease;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 当WordPress admin bar存在时，调整header位置 */
+body.admin-bar .site-header {
+    top: 32px; /* admin bar的高度 */
+}
+
+@media screen and (max-width: 782px) {
+    body.admin-bar .site-header {
+        top: 46px; /* 移动端admin bar的高度 */
+    }
 }
 
 

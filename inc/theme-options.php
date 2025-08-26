@@ -24,24 +24,24 @@ require_once __DIR__ . '/theme-options/admin-assets.php';
  * 主题设置页面类
  */
 class Xinyun_Theme_Options {
-
+    
     /**
      * 单例实例
-     *
+     * 
      * @var Xinyun_Theme_Options|null
      */
     private static ?Xinyun_Theme_Options $instance = null;
-
+    
     /**
      * 选项名称
-     *
+     * 
      * @var string
      */
     private string $option_name = 'xinyun_theme_options';
-
+    
     /**
      * 页面slug
-     *
+     * 
      * @var string
      */
     private string $page_slug = 'xinyun-theme-options';
@@ -54,20 +54,20 @@ class Xinyun_Theme_Options {
     private Xinyun_Post_Settings $post_settings;
     private Xinyun_About_Settings $about_settings;
     private Xinyun_Admin_Assets $admin_assets;
-
+    
     /**
      * 获取单例实例
-     *
+     * 
      * @return Xinyun_Theme_Options
      */
     public static function get_instance(): Xinyun_Theme_Options {
         if (self::$instance === null) {
             self::$instance = new self();
         }
-
+        
         return self::$instance;
     }
-
+    
     /**
      * 私有构造函数
      */
@@ -82,7 +82,7 @@ class Xinyun_Theme_Options {
         add_action('admin_menu', [$this, 'add_theme_page']);
         add_action('admin_init', [$this, 'init_settings']);
     }
-
+    
     /**
      * 添加主题设置页面到后台菜单
      */
@@ -95,7 +95,7 @@ class Xinyun_Theme_Options {
             [$this, 'render_options_page'] // 渲染函数
         );
     }
-
+    
     /**
      * 初始化设置字段
      */
@@ -106,7 +106,7 @@ class Xinyun_Theme_Options {
             $this->option_name,
             [$this, 'sanitize_options']
         );
-
+        
         // 设置子类会自动初始化自己的设置字段
     }
 
@@ -293,7 +293,7 @@ class Xinyun_Theme_Options {
         // 清理测试数据
         delete_option('xinyun_test_settings');
     }
-
+    
     /**
      * 渲染选项页面
      */
@@ -301,11 +301,11 @@ class Xinyun_Theme_Options {
         ?>
         <div class="wrap xinyun-theme-options">
             <h1>
-                <span class="dashicons dashicons-admin-appearance"></span>
+                <span class="dashicons dashicons-admin-appearance"></span> 
                 心耘主题设置
             </h1>
             <p class="description">配置心耘主题的各项功能和显示选项。</p>
-
+            
             <?php settings_errors(); ?>
 
             <?php if (isset($_GET['test_settings'])) $this->test_settings_save(); ?>
@@ -335,7 +335,7 @@ class Xinyun_Theme_Options {
                     </li>
                 </ul>
             </nav>
-
+            
             <!-- Tab 内容 -->
             <div id="basic-settings" class="xinyun-tab-content active">
                 <form method="post" action="options.php" class="xinyun-options-form">
