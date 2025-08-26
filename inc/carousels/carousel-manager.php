@@ -164,11 +164,7 @@ class Xinyun_Carousel_Manager {
         // 获取主题设置中选择的轮播图类型
         $carousel_type = $theme_options->get_option('homepage_carousel_type', 'post');
         
-        // 调试信息（仅管理员可见）
-        if (current_user_can('manage_options') && WP_DEBUG) {
-            error_log('Xinyun Carousel Debug: Type = ' . $carousel_type);
-            error_log('Xinyun Carousel Debug: Available types = ' . implode(', ', array_keys($this->carousels)));
-        }
+        // 移除调试日志输出
         
         // 如果设置为不显示
         if ($carousel_type === 'none') {
@@ -207,10 +203,7 @@ class Xinyun_Carousel_Manager {
         // 渲染轮播图
         $result = $carousel->render($final_options);
         
-        // 调试信息
-        if (current_user_can('manage_options') && WP_DEBUG) {
-            error_log('Xinyun Carousel Debug: Render result length = ' . strlen($result));
-        }
+        // 移除调试日志输出
         
         return $result;
     }

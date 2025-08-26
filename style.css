@@ -99,8 +99,11 @@ body.admin-bar .site-header {
 
 /* 头部样式 */
 .site-header {
-    background: #fff;
-    border-bottom: 1px solid #eee;
+    /* 玻璃拟态与半透明背景 */
+    background: rgba(255, 255, 255, 0.8); /* 提高不透明度，降低透明感 */
+    -webkit-backdrop-filter: saturate(160%) blur(12px);
+    backdrop-filter: saturate(160%) blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
     padding: 0.75rem 0;
     position: fixed;
     top: 0;
@@ -108,8 +111,8 @@ body.admin-bar .site-header {
     right: 0;
     width: 100%;
     z-index: 999; /* 低于admin bar的z-index (99999) */
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
 }
 
 /* 当WordPress admin bar存在时，调整header位置 */
@@ -120,6 +123,36 @@ body.admin-bar .site-header {
 @media screen and (max-width: 782px) {
     body.admin-bar .site-header {
         top: 46px; /* 移动端admin bar的高度 */
+    }
+}
+
+/* 移动端：减小标题栏整体高度 */
+@media (max-width: 782px) {
+    .site-header {
+        padding: 0.5rem 0; /* 原 0.75rem → 0.5rem */
+    }
+
+    .header-content {
+        min-height: 40px; /* 原 45px → 40px */
+        gap: 1rem; /* 原 2rem → 1rem */
+    }
+
+    .menu-toggle {
+        padding: 0.5rem; /* 原 0.75rem → 0.5rem */
+    }
+
+    .logo-placeholder {
+        width: 32px; /* 原 40px → 32px */
+        height: 32px; /* 原 40px → 32px */
+        font-size: 0.65rem; /* 略微减小字号 */
+    }
+
+    .site-title {
+        font-size: 1.25rem; /* 原 1.5rem → 1.25rem */
+    }
+
+    .main-navigation ul {
+        gap: 1rem; /* 原 2rem → 1rem，避免内容撑高 */
     }
 }
 
