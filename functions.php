@@ -298,6 +298,36 @@ function xinyun_admin_footer_text($footer_text) {
 add_filter('admin_footer_text', 'xinyun_admin_footer_text');
 
 /**
+ * 加载主题设置页面
+ */
+require get_template_directory() . '/inc/theme-options.php';
+
+/**
+ * 加载轮播图管理器
+ */
+require get_template_directory() . '/inc/carousels/carousel-manager.php';
+
+/**
+ * 初始化主题组件
+ */
+function xinyun_init_theme_components(): void {
+    // 初始化主题设置页面
+    Xinyun_Theme_Options::get_instance();
+    
+    // 初始化轮播图管理器
+    Xinyun_Carousel_Manager::get_instance();
+}
+add_action('init', 'xinyun_init_theme_components');
+
+/**
+ * 渲染首页轮播图（兼容函数）
+ */
+function xinyun_render_carousel(): string {
+    $carousel_manager = Xinyun_Carousel_Manager::get_instance();
+    return $carousel_manager->render_homepage_carousel();
+}
+
+/**
  * 加载主题自定义器文件
  */
 require get_template_directory() . '/inc/customizer.php';

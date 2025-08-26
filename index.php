@@ -13,6 +13,9 @@ get_header(); ?>
 <div class="site-content">
     <div class="container">
         <?php if (is_home() || is_front_page()) : ?>
+            <!-- 首页轮播图 -->
+            <?php echo xinyun_render_carousel(); ?>
+            
             <!-- 首页：全宽布局，无侧边栏 -->
             <main class="content-area" style="max-width: 800px; margin: 0 auto;">
         <?php else : ?>

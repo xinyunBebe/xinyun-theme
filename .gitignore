@@ -162,3 +162,6 @@ bs-config.js
 
 # Prettier
 .prettierignore
+
+.claude
+qodana.yaml

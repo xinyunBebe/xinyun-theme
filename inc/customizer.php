@@ -229,6 +229,100 @@ function xinyun_customize_register($wp_customize) {
         'section' => 'xinyun_blog',
         'type'    => 'checkbox',
     ));
+    
+    // 首页轮播图设置
+    $wp_customize->add_section('xinyun_homepage_carousel', array(
+        'title'    => '首页轮播图',
+        'priority' => 25,
+        'description' => '设置首页轮播图的显示类型和配置选项',
+    ));
+    
+    // 轮播图类型选择
+    $wp_customize->add_setting('homepage_carousel_type', array(
+        'default'           => 'post',
+        'sanitize_callback' => 'xinyun_sanitize_carousel_type',
+    ));
+    
+    // 获取轮播图管理器实例和选项
+    $carousel_manager = Xinyun_Carousel_Manager::get_instance();
+    $carousel_choices = $carousel_manager->get_carousel_choices();
+    
+    $wp_customize->add_control('homepage_carousel_type', array(
+        'label'   => '轮播图类型',
+        'section' => 'xinyun_homepage_carousel',
+        'type'    => 'select',
+        'choices' => $carousel_choices,
+        'description' => '选择首页要显示的轮播图类型',
+    ));
+    
+    // 轮播图高度设置
+    $wp_customize->add_setting('homepage_carousel_height', array(
+        'default'           => 400,
+        'sanitize_callback' => 'absint',
+    ));
+    
+    $wp_customize->add_control('homepage_carousel_height', array(
+        'label'       => '轮播图高度（像素）',
+        'section'     => 'xinyun_homepage_carousel',
+        'type'        => 'number',
+        'input_attrs' => array(
+            'min'  => 200,
+            'max'  => 800,
+            'step' => 50,
+        ),
+        'description' => '设置桌面端轮播图的高度',
+    ));
+    
+    // 自动播放设置
+    $wp_customize->add_setting('homepage_carousel_autoplay', array(
+        'default'           => true,
+        'sanitize_callback' => 'wp_validate_boolean',
+    ));
+    
+    $wp_customize->add_control('homepage_carousel_autoplay', array(
+        'label'   => '自动播放',
+        'section' => 'xinyun_homepage_carousel',
+        'type'    => 'checkbox',
+        'description' => '启用轮播图自动播放功能',
+    ));
+    
+    // 播放间隔设置
+    $wp_customize->add_setting('homepage_carousel_interval', array(
+        'default'           => 5000,
+        'sanitize_callback' => 'absint',
+    ));
+    
+    $wp_customize->add_control('homepage_carousel_interval', array(
+        'label'       => '播放间隔（毫秒）',
+        'section'     => 'xinyun_homepage_carousel',
+        'type'        => 'number',
+        'input_attrs' => array(
+            'min'  => 2000,
+            'max'  => 10000,
+            'step' => 500,
+        ),
+        'description' => '自动播放的时间间隔',
+        'active_callback' => 'xinyun_is_carousel_autoplay_enabled',
+    ));
+    
+    // 显示数量设置
+    $wp_customize->add_setting('homepage_carousel_posts_count', array(
+        'default'           => 5,
+        'sanitize_callback' => 'absint',
+    ));
+    
+    $wp_customize->add_control('homepage_carousel_posts_count', array(
+        'label'       => '显示文章数量',
+        'section'     => 'xinyun_homepage_carousel',
+        'type'        => 'number',
+        'input_attrs' => array(
+            'min'  => 3,
+            'max'  => 10,
+            'step' => 1,
+        ),
+        'description' => '轮播图中显示的文章数量',
+        'active_callback' => 'xinyun_is_post_carousel_selected',
+    ));
 }
 add_action('customize_register', 'xinyun_customize_register');
 
@@ -248,6 +342,23 @@ function xinyun_sanitize_sidebar_position($input) {
 function xinyun_sanitize_header_layout($input) {
     $valid = array('horizontal', 'vertical', 'centered');
     return in_array($input, $valid) ? $input : 'horizontal';
+}
+
+function xinyun_sanitize_carousel_type($input) {
+    $carousel_manager = Xinyun_Carousel_Manager::get_instance();
+    $valid_types = array_keys($carousel_manager->get_carousel_choices());
+    return in_array($input, $valid_types) ? $input : 'post';
+}
+
+/**
+ * 条件显示回调函数
+ */
+function xinyun_is_carousel_autoplay_enabled($control) {
+    return $control->manager->get_setting('homepage_carousel_autoplay')->value();
+}
+
+function xinyun_is_post_carousel_selected($control) {
+    return $control->manager->get_setting('homepage_carousel_type')->value() === 'post';
 }
 
 /**
