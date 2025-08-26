@@ -384,7 +384,10 @@ class Xinyun_Theme_Options {
             <p class="description">配置心耘主题的各项功能和显示选项。</p>
             
             <?php settings_errors(); ?>
-            
+
+            <!-- 测试设置保存功能 -->
+            <?php if (isset($_GET['test_settings'])) $this->test_settings_save(); ?>
+
             <!-- Tab 导航 -->
             <nav class="xinyun-tab-nav">
                 <ul>
@@ -444,6 +447,23 @@ class Xinyun_Theme_Options {
 
             <div id="about-info" class="xinyun-tab-content">
                 <?php $this->render_about_tab(); ?>
+            </div>
+
+            <!-- 测试区域 -->
+            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 1px solid #ddd;">
+                <h3>🔧 调试工具</h3>
+                <p>使用以下工具测试设置保存功能：</p>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <a href="<?php echo add_query_arg('test_settings', '1'); ?>" class="button button-secondary">
+                        🧪 测试设置保存
+                    </a>
+                    <a href="<?php echo remove_query_arg('test_settings'); ?>" class="button button-secondary">
+                        🔄 清除测试
+                    </a>
+                </div>
+                <p style="margin-top: 10px; font-size: 12px; color: #666;">
+                    测试完成后请查看页面顶部的结果提示，以及服务器错误日志。
+                </p>
             </div>
         </div>
         <?php
@@ -625,11 +645,13 @@ class Xinyun_Theme_Options {
     
     /**
      * 获取主题选项
-     * 
+     *
      * @return array
      */
     public function get_options(): array {
-        return get_option($this->option_name, []);
+        $options = get_option($this->option_name, []);
+        error_log('Xinyun Theme Options - Retrieved: ' . print_r($options, true));
+        return $options;
     }
     
     /**
@@ -663,6 +685,9 @@ class Xinyun_Theme_Options {
      * @return array
      */
     public function sanitize_options(array $input): array {
+        // 调试日志
+        error_log('Xinyun Theme Options - Input: ' . print_r($input, true));
+
         $sanitized = [];
         
         // 颜色字段
@@ -712,8 +737,44 @@ class Xinyun_Theme_Options {
         foreach ($boolean_fields as $field) {
             $sanitized[$field] = !empty($input[$field]);
         }
-        
+
+        // 调试日志
+        error_log('Xinyun Theme Options - Sanitized: ' . print_r($sanitized, true));
+
         return $sanitized;
+    }
+
+    /**
+     * 测试设置保存功能
+     */
+    public function test_settings_save(): void {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
+        // 测试数据
+        $test_data = [
+            'primary_color' => '#ff0000',
+            'container_width' => 1400,
+            'excerpt_length' => 50
+        ];
+
+        // 保存测试数据
+        update_option($this->option_name, $test_data);
+
+        // 立即读取验证
+        $saved_data = get_option($this->option_name, []);
+
+        echo '<div class="notice notice-info is-dismissible">';
+        echo '<p><strong>设置保存测试：</strong></p>';
+        echo '<p>测试数据: ' . esc_html(json_encode($test_data)) . '</p>';
+        echo '<p>保存的数据: ' . esc_html(json_encode($saved_data)) . '</p>';
+        if ($saved_data === $test_data) {
+            echo '<p style="color: green;"><strong>✅ 设置保存正常！</strong></p>';
+        } else {
+            echo '<p style="color: red;"><strong>❌ 设置保存异常！</strong></p>';
+        }
+        echo '</div>';
     }
     
     /**
