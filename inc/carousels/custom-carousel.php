@@ -205,10 +205,14 @@ class Xinyun_Custom_Carousel extends Xinyun_Carousel_Base {
                 
                 <?php if ($show_arrows && count($slides) > 1): ?>
                     <button class="carousel-arrow carousel-prev" aria-label="上一张">
-                        <span>‹</span>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                        </svg>
                     </button>
                     <button class="carousel-arrow carousel-next" aria-label="下一张">
-                        <span>›</span>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+                        </svg>
                     </button>
                 <?php endif; ?>
             </div>
@@ -308,6 +312,72 @@ class Xinyun_Custom_Carousel extends Xinyun_Carousel_Base {
                 opacity: 0.8;
             }
             
+            /* 轮播图箭头样式 */
+            .custom-carousel .carousel-arrow {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                background: rgba(255, 255, 255, 0.9);
+                border: none;
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #333;
+                transition: background-color 0.3s ease, color 0.3s ease;
+                z-index: 2;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+            
+            .custom-carousel .carousel-arrow:hover {
+                background: rgba(255, 255, 255, 1);
+                color: #007cba;
+                /* 不改变位置，只改变颜色 */
+            }
+            
+            .custom-carousel .carousel-prev {
+                left: 20px;
+            }
+            
+            .custom-carousel .carousel-next {
+                right: 20px;
+            }
+            
+            .custom-carousel .carousel-arrow svg {
+                width: 24px;
+                height: 24px;
+            }
+            
+            /* 分页指示器样式 */
+            .custom-carousel .carousel-pagination {
+                position: absolute;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                gap: 10px;
+                z-index: 2;
+            }
+            
+            .custom-carousel .pagination-dot {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                border: 2px solid rgba(255, 255, 255, 0.5);
+                background: transparent;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .custom-carousel .pagination-dot.active,
+            .custom-carousel .pagination-dot:hover {
+                background: white;
+                border-color: white;
+            }
+            
             @media (max-width: 768px) {
                 .custom-carousel .carousel-container {
                     height: <?php echo esc_attr($options['mobile_height']); ?>;
@@ -328,6 +398,23 @@ class Xinyun_Custom_Carousel extends Xinyun_Carousel_Base {
                 .custom-carousel .slide-meta {
                     flex-direction: column;
                     gap: 5px;
+                }
+                
+                .custom-carousel .carousel-arrow {
+                    width: 40px;
+                    height: 40px;
+                }
+                
+                .custom-carousel .carousel-prev {
+                    left: 10px;
+                }
+                
+                .custom-carousel .carousel-next {
+                    right: 10px;
+                }
+                
+                .custom-carousel .carousel-pagination {
+                    bottom: 10px;
                 }
             }
         </style>
