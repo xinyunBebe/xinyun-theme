@@ -1,0 +1,771 @@
+/*
+Theme Name: Xinyun
+Description: 一个功能完善的WordPress自定义主题，具有现代化的设计和强大的功能。
+Author: Xinyun
+Version: 1.0.0
+Text Domain: xinyun
+Tags: responsive, clean, modern, flexible, customizable
+Requires at least: 6.0
+Tested up to: 6.4
+Requires PHP: 8.0
+License: GPL v2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+*/
+
+/* 基础样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #fff;
+    padding-top: 70px; /* 为固定头部预留空间 */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 当WordPress admin bar存在时调整顶部间距 */
+body.admin-bar {
+    padding-top: 102px; /* 70px (header) + 32px (admin bar) */
+}
+
+@media screen and (max-width: 782px) {
+    body.admin-bar {
+        padding-top: 116px; /* 70px (header) + 46px (admin bar on mobile) */
+    }
+}
+
+/* 整站容器 */
+.site {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin-top: -70px; /* 抵消body的padding-top */
+    padding-top: 70px; /* 重新添加padding */
+}
+
+/* 当WordPress admin bar存在时，调整site容器 */
+body.admin-bar .site {
+    margin-top: -102px; /* 抵消body的padding-top (70px + 32px) */
+    padding-top: 102px; /* 重新添加padding */
+}
+
+@media screen and (max-width: 782px) {
+    body.admin-bar .site {
+        margin-top: -116px; /* 抵消body的padding-top (70px + 46px) */
+        padding-top: 116px; /* 重新添加padding */
+    }
+}
+
+/* 确保所有固定和绝对定位的元素都不会遮挡admin bar */
+body.admin-bar .site-header {
+    /* admin bar的z-index是99999，我们的header应该低于它 */
+    z-index: 999;
+}
+
+/* 确保轮播图和其他内容元素的z-index不会太高 */
+.xinyun-carousel,
+.carousel-container,
+.carousel-slide {
+    z-index: 1 !important;
+}
+
+.carousel-arrow,
+.carousel-pagination {
+    z-index: 2 !important;
+}
+
+/* 确保下拉菜单等交互元素在合理范围内 */
+.main-navigation .sub-menu {
+    z-index: 100;
+}
+
+/* 容器样式 */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* 头部样式 */
+.site-header {
+    /* 玻璃拟态与半透明背景 */
+    background: rgba(255, 255, 255, 0.8); /* 提高不透明度，降低透明感 */
+    -webkit-backdrop-filter: saturate(160%) blur(12px);
+    backdrop-filter: saturate(160%) blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+    padding: 0.75rem 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 999; /* 低于admin bar的z-index (99999) */
+    transition: background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* 当WordPress admin bar存在时，调整header位置 */
+body.admin-bar .site-header {
+    top: 32px; /* admin bar的高度 */
+}
+
+@media screen and (max-width: 782px) {
+    body.admin-bar .site-header {
+        top: 46px; /* 移动端admin bar的高度 */
+    }
+}
+
+/* 移动端：减小标题栏整体高度 */
+@media (max-width: 782px) {
+    .site-header {
+        padding: 0.5rem 0; /* 原 0.75rem → 0.5rem */
+    }
+
+    .header-content {
+        min-height: 40px; /* 原 45px → 40px */
+        gap: 1rem; /* 原 2rem → 1rem */
+    }
+
+    .menu-toggle {
+        padding: 0.5rem; /* 原 0.75rem → 0.5rem */
+    }
+
+    .logo-placeholder {
+        width: 32px; /* 原 40px → 32px */
+        height: 32px; /* 原 40px → 32px */
+        font-size: 0.65rem; /* 略微减小字号 */
+    }
+
+    .site-title {
+        font-size: 1.25rem; /* 原 1.5rem → 1.25rem */
+    }
+
+    .main-navigation ul {
+        gap: 1rem; /* 原 2rem → 1rem，避免内容撑高 */
+    }
+}
+
+
+/* Header内容布局 */
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    min-height: 45px;
+}
+
+/* 左侧品牌区域 */
+.site-branding {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+/* Logo占位符样式 */
+.site-logo-placeholder {
+    flex-shrink: 0;
+}
+
+.logo-placeholder {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #007cba, #005a87);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    border-radius: 8px;
+    letter-spacing: 1px;
+}
+
+/* 网站标题区域 */
+.site-title-area {
+    flex-shrink: 0;
+}
+
+.site-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.site-title a {
+    text-decoration: none;
+    color: #333;
+}
+
+/* 导航样式 */
+.main-navigation {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.main-navigation ul {
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+    margin: 0;
+    padding: 0;
+}
+
+.main-navigation a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    position: relative;
+}
+
+.main-navigation a:hover {
+    color: #007cba;
+    background: rgba(0, 124, 186, 0.1);
+}
+
+/* 移动端菜单切换按钮 */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.75rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.menu-toggle:hover {
+    background: rgba(0, 124, 186, 0.1);
+}
+
+.menu-toggle-icon {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.menu-toggle-icon span {
+    width: 20px;
+    height: 2px;
+    background: #333;
+    transition: all 0.3s ease;
+}
+
+.menu-toggle-text {
+    display: none; /* 隐藏菜单文字 */
+}
+
+/* Header操作按钮区域 */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    margin-left: auto; /* 自动推到右侧 */
+}
+
+.search-toggle,
+.theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.75rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: #333;
+}
+
+.search-toggle:hover,
+.theme-toggle:hover {
+    background: rgba(0, 124, 186, 0.1);
+    color: #007cba;
+}
+
+.theme-toggle .theme-icon {
+    transition: opacity 0.3s ease;
+}
+
+/* 主内容区域 */
+.site-content {
+    padding: 2rem 0;
+    flex: 1; /* 填充剩余空间，将footer推到底部 */
+}
+
+.content-area {
+    flex: 1;
+}
+
+/* 文章样式 */
+.post {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #eee;
+}
+
+.entry-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.entry-title a {
+    text-decoration: none;
+    color: #333;
+}
+
+.entry-content {
+    line-height: 1.8;
+    margin-bottom: 1rem;
+}
+
+.entry-meta {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* 侧边栏样式 */
+.widget-area {
+    width: 300px;
+    margin-left: 2rem;
+}
+
+.widget {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #f9f9f9;
+    border-radius: 5px;
+}
+
+.widget-title {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+/* 底部样式 */
+.site-footer {
+    background: #333;
+    color: #fff;
+    text-align: center;
+    padding: 2rem 0;
+    margin-top: 3rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+    
+    /* 移动端头部布局调整 */
+    .header-content {
+        gap: 0.5rem;
+        justify-content: space-between;
+        position: relative;
+    }
+    
+    /* 移动端菜单按钮显示在最左侧 */
+    .menu-toggle {
+        display: flex;
+        order: 1;
+    }
+    
+    /* 移动端品牌区域居中 */
+    .site-branding {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        gap: 0;
+        order: 2;
+    }
+    
+    /* 隐藏移动端标题 */
+    .site-title-area {
+        display: none;
+    }
+    
+    /* 移动端logo居中且稍大一些 */
+    .logo-placeholder {
+        width: 36px;
+        height: 36px;
+        font-size: 0.65rem;
+    }
+    
+    /* 右侧按钮区域 */
+    .header-actions {
+        order: 3;
+        margin-left: 0;
+    }
+    
+    /* 移动端导航 */
+    .main-navigation {
+        order: 4;
+        width: 100%;
+        flex: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+    }
+    
+    .main-navigation ul {
+        display: none;
+        flex-direction: column;
+        gap: 0;
+        width: 100%;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 0 0 8px 8px;
+        padding: 1rem 0;
+        margin: 0;
+    }
+    
+    .main-navigation ul.show {
+        display: flex;
+    }
+    
+    .main-navigation li {
+        width: 100%;
+    }
+    
+    .main-navigation a {
+        display: block;
+        padding: 1rem 2rem;
+        border-radius: 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .main-navigation a:hover {
+        background: rgba(0, 124, 186, 0.05);
+    }
+    
+    /* 移动端操作按钮调整 */
+    .header-actions {
+        gap: 0.25rem;
+    }
+    
+    .search-toggle,
+    .theme-toggle {
+        padding: 0.5rem;
+    }
+    
+    .widget-area {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 2rem;
+    }
+    
+    .entry-title {
+        font-size: 2rem;
+    }
+}
+
+/* 实用类 */
+.text-center {
+    text-align: center;
+}
+
+.mt-1 { margin-top: 1rem; }
+.mt-2 { margin-top: 2rem; }
+.mb-1 { margin-bottom: 1rem; }
+.mb-2 { margin-bottom: 2rem; }
+
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: #007cba;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.3s ease;
+}
+
+.btn:hover {
+    background: #005a87;
+}
+
+/* 轮播图样式 */
+.hero-carousel {
+    margin: -2rem -20px 3rem -20px; /* 突破container限制，全宽显示 */
+    position: relative;
+}
+
+.hero-carousel .splide {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px; /* 顶部与底部都为圆角 */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.hero-carousel .splide__slide {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slide-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slide-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.slide-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.slide-image:hover img {
+    transform: scale(1.05);
+}
+
+.slide-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        135deg, 
+        rgba(0, 124, 186, 0.7) 0%, 
+        rgba(0, 90, 135, 0.8) 50%, 
+        rgba(0, 0, 0, 0.6) 100%
+    );
+    z-index: 1;
+}
+
+.slide-info {
+    position: relative;
+    z-index: 2;
+    color: white;
+    text-align: center;
+    max-width: 600px;
+    padding: 2rem;
+}
+
+.slide-category {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.slide-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.slide-title a {
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.slide-title a:hover {
+    color: #cce7ff;
+}
+
+.slide-excerpt {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    opacity: 0.95;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.slide-meta {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* 居中对齐 */
+    gap: 1.5rem;
+    font-size: 0.9rem;
+    opacity: 0.9;
+    flex-wrap: wrap;
+    flex-direction: column; /* 垂直堆叠，确保“阅读更多”在标题下方居中 */
+    align-items: center; /* 居中每个项目 */
+}
+
+/* 确保阅读更多按钮绝对居中并与上方元素留出间距 */
+.slide-read-more {
+    align-self: center;
+}
+
+.slide-meta time {
+    color: #cce7ff;
+}
+
+.slide-read-more {
+    color: white;
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-weight: 500;
+}
+
+.slide-read-more:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+    /* 移除 transform: translateY(-2px) 避免悬浮时位置变化 */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* 自定义箭头样式 */
+.hero-carousel .splide__arrow {
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.hero-carousel .splide__arrow:hover {
+    background: white;
+    color: #007cba;
+    /* 移除 transform: scale(1.1) 避免悬浮时位置变化 */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.hero-carousel .splide__arrow svg {
+    width: 24px;
+    height: 24px;
+    /* 关闭任何来自库的旋转，避免左右方向被统一 */
+    transform: none !important;
+}
+
+/* 明确指定左右箭头的SVG不旋转，确保方向正确 */
+.hero-carousel .splide__arrow--prev svg {
+    transform: none !important;
+}
+.hero-carousel .splide__arrow--next svg {
+    transform: none !important;
+}
+
+.hero-carousel .splide__arrow--prev {
+    left: 20px;
+}
+
+.hero-carousel .splide__arrow--next {
+    right: 20px;
+}
+
+/* 自定义分页指示器样式 */
+.hero-carousel .splide__pagination {
+    bottom: 20px;
+    z-index: 3;
+}
+
+.hero-carousel .splide__pagination__page {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    margin: 0 6px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.hero-carousel .splide__pagination__page.is-active {
+    background: white;
+    transform: scale(1.2);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .hero-carousel {
+        margin: -2rem -15px 2rem -15px;
+    }
+    
+    .slide-info {
+        padding: 1.5rem 1rem;
+        max-width: 100%;
+    }
+    
+    .slide-title {
+        font-size: 1.8rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .slide-excerpt {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .slide-meta {
+        flex-direction: column;
+        gap: 0.8rem;
+        font-size: 0.85rem;
+    }
+    
+    .hero-carousel .splide__arrow--prev {
+        left: 10px;
+    }
+    
+    .hero-carousel .splide__arrow--next {
+        right: 10px;
+    }
+    
+    .hero-carousel .splide__arrow {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .hero-carousel .splide__arrow svg {
+        width: 20px;
+        height: 20px;
+    }
+}

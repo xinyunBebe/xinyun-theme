@@ -80,7 +80,7 @@ function xinyun_setup() {
 
     // 启用编辑器样式
     add_theme_support('editor-styles');
-    add_editor_style('editor-style.css');
+    add_editor_style('assets/css/editor-style.css');
 
     // 启用响应式嵌入
     add_theme_support('responsive-embeds');
@@ -145,11 +145,15 @@ add_action('widgets_init', 'xinyun_widgets_init');
  * 加载样式和脚本
  */
 function xinyun_scripts() {
-    // 主样式文件
+    // 主样式文件（通过根目录的style.css引入）
     wp_enqueue_style('xinyun-style', get_stylesheet_uri(), array(), XINYUN_VERSION);
-
-    // 如果需要导航脚本，可以在这里添加
-
+    
+    // 额外的CSS文件
+    wp_enqueue_style('xinyun-main-style', get_template_directory_uri() . '/assets/css/style.css', array('xinyun-style'), XINYUN_VERSION);
+    
+    // 主JavaScript文件
+    wp_enqueue_script('xinyun-main', get_template_directory_uri() . '/assets/js/main.js', array(), XINYUN_VERSION, true);
+    
     // 如果是单篇文章且评论开放，加载评论回复脚本
     if (is_singular() && comments_open() && get_option('thread_comments')) {
         wp_enqueue_script('comment-reply');
