@@ -24,8 +24,8 @@
 <div id="page" class="site">
     <a class="skip-link screen-reader-text" href="#content">跳到主内容</a>
 
-    <header id="masthead" class="site-header">
-        <div class="container">
+    <header id="masthead" class="site-header py-3">
+        <div class="container max-w-6xl mx-auto px-5">
             <div class="header-content">
                 <!-- 移动端菜单按钮 -->
                 <button class="menu-toggle" aria-controls="primary-menu" aria-expanded="false">

@@ -1,0 +1,455 @@
+@import "tailwindcss";
+
+/* 
+ * 重要提示：确保Tailwind样式优先级高于主题的基础样式
+ * 通过提高特异性来覆盖assets/css/style.css中的样式
+ */
+
+/* Tailwind CSS v4 主题配置 */
+@theme {
+  --color-primary: #007cba;
+  --color-primary-hover: #005a87;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  
+  /* 测试按钮需要的颜色 */
+  --color-blue-50: #eff6ff;
+  --color-blue-200: #bfdbfe;
+  --color-blue-500: #3b82f6;
+  --color-blue-600: #2563eb;
+  --color-blue-800: #1e40af;
+  
+  --color-green-500: #22c55e;
+  --color-green-600: #16a34a;
+  
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626;
+  
+  --color-purple-500: #a855f7;
+  --color-purple-600: #9333ea;
+  
+  --color-pink-500: #ec4899;
+  --color-pink-600: #db2777;
+  
+  /* 头部相关的颜色 */
+  --color-brand-from: #007cba;
+  --color-brand-to: #005a87;
+  --color-header-bg: rgba(255, 255, 255, 0.8);
+  --color-header-border: rgba(255, 255, 255, 0.6);
+  
+  --radius-sm: 0.125rem;  /* 2px */
+  --radius: 0.25rem;     /* 4px */
+  --radius-md: 0.375rem; /* 6px */
+  --radius-lg: 0.5rem;   /* 8px */
+  --radius-xl: 0.75rem;  /* 12px */
+  
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* 全局样式调整 */
+@layer base {
+  /* 为固定头部预留空间 */
+  body {
+    @apply pt-[70px];
+  }
+  
+  /* WordPress admin bar存在时调整 */
+  body.admin-bar {
+    @apply pt-[102px];
+  }
+  
+  @media screen and (max-width: 782px) {
+    body.admin-bar {
+      padding-top: 116px;
+    }
+  }
+  
+  /* 站点容器 */
+  .site {
+    @apply flex flex-col min-h-screen -mt-[70px] pt-[70px];
+  }
+  
+  body.admin-bar .site {
+    @apply -mt-[102px] pt-[102px];
+  }
+  
+  @media screen and (max-width: 782px) {
+    body.admin-bar .site {
+      margin-top: -116px;
+      padding-top: 116px;
+    }
+  }
+}
+
+/* 头部组件的自定义样式 */
+@layer components {
+  /* 头部固定定位和背景 */
+  .site-header {
+    @apply fixed top-0 left-0 right-0 w-full z-[999] transition-all duration-300;
+    background: var(--color-header-bg);
+    backdrop-filter: saturate(160%) blur(12px);
+    -webkit-backdrop-filter: saturate(160%) blur(12px);
+    border-bottom: 1px solid var(--color-header-border);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  }
+  
+  /* WordPress admin bar 存在时的调整 */
+  body.admin-bar .site-header {
+    @apply top-8;
+  }
+  
+  @media screen and (max-width: 782px) {
+    body.admin-bar .site-header {
+      top: 46px;
+    }
+  }
+  
+  /* 头部内容布局 */
+  .header-content {
+    @apply flex items-center gap-8 min-h-[45px];
+  }
+  
+  /* 品牌区域 */
+  .site-branding {
+    @apply flex items-center gap-4 flex-shrink-0;
+  }
+  
+  /* Logo 样式 */
+  .logo-placeholder {
+    @apply w-10 h-10 flex items-center justify-center text-xs font-bold text-white rounded tracking-wider flex-shrink-0;
+    background: linear-gradient(135deg, var(--color-brand-from), var(--color-brand-to));
+  }
+  
+  /* 网站标题 */
+  .site-title {
+    @apply text-2xl font-bold m-0 flex-shrink-0;
+  }
+  
+  .site-title a {
+    @apply text-gray-800 no-underline;
+  }
+  
+  /* 导航菜单 */
+  .main-navigation {
+    @apply flex justify-start;
+  }
+  
+  .main-navigation ul {
+    @apply list-none flex gap-8 m-0 p-0;
+  }
+  
+  .main-navigation a {
+    @apply no-underline text-gray-800 font-medium transition-colors duration-300 py-2 px-4 rounded relative;
+  }
+  
+  .main-navigation a:hover {
+    @apply text-blue-600;
+    background: rgba(0, 124, 186, 0.1);
+  }
+  
+  /* 头部操作按钮 */
+  .header-actions {
+    @apply flex items-center gap-2 flex-shrink-0 ml-auto;
+  }
+  
+  .search-toggle,
+  .theme-toggle {
+    @apply bg-transparent border-0 cursor-pointer p-3 rounded flex items-center justify-center transition-all duration-300 text-gray-800;
+  }
+  
+  .search-toggle:hover,
+  .theme-toggle:hover {
+    @apply text-blue-600;
+    background: rgba(0, 124, 186, 0.1);
+  }
+  
+  /* 移动端菜单按钮 */
+  .menu-toggle {
+    @apply hidden bg-transparent border-0 cursor-pointer p-3 flex-col items-center justify-center flex-shrink-0 rounded transition-all duration-300;
+  }
+  
+  .menu-toggle:hover {
+    background: rgba(0, 124, 186, 0.1);
+  }
+  
+  .menu-toggle-icon {
+    @apply flex flex-col gap-1;
+  }
+  
+  .menu-toggle-icon span {
+    @apply w-5 h-0.5 bg-gray-800 transition-all duration-300;
+  }
+  
+  .menu-toggle-text {
+    @apply hidden;
+  }
+}
+
+/* 评论组件的自定义样式 */
+@layer components {
+  /* 评论区域 - 极简样式 */
+  .comments-area {
+    @apply py-6;
+  }
+  
+  /* 隐藏默认表单标题 */
+  .comment-form h3,
+  .comment-form .comment-form-title {
+    @apply hidden;
+  }
+  
+  /* 表单样式 */
+  .comment-form {
+    @apply mb-8;
+  }
+  
+  /* 评论列表 */
+  .comment-list {
+    @apply space-y-4;
+  }
+  
+  .comment-list > div {
+    @apply mb-4;
+  }
+  
+  /* 嵌套评论 */
+  .comment-list .depth-2,
+  .comment-list .depth-3,
+  .comment-list .depth-4 {
+    @apply ml-10 mt-3 mb-2;
+  }
+  
+  /* 评论主体 */
+  .comment-body {
+    @apply py-0;
+  }
+  
+  /* 评论头部 */
+  .comment-header {
+    @apply flex items-start gap-3;
+  }
+  
+  .comment-avatar img {
+    @apply w-10 h-10 rounded-full;
+  }
+  
+  .comment-main {
+    @apply flex-1 flex flex-col gap-2;
+  }
+  
+  /* 评论作者名称 */
+  .comment-author-name .fn {
+    @apply font-medium text-gray-800 text-sm no-underline hover:text-blue-600 transition-colors mb-1;
+  }
+  
+  /* 评论内容 */
+  .comment-content {
+    @apply leading-relaxed m-0 text-gray-700 text-sm bg-gray-100 p-3 rounded mb-2;
+  }
+  
+  .comment-content p {
+    @apply mb-2 last:mb-0;
+  }
+  
+  /* 评论元信息 */
+  .comment-meta {
+    @apply m-0 flex justify-between items-center;
+  }
+  
+  .comment-time {
+    @apply text-xs text-gray-500 flex items-center gap-2;
+  }
+  
+  .comment-time a {
+    @apply text-gray-500 no-underline hover:text-gray-700 transition-colors;
+  }
+  
+  /* 回复按钮 */
+  .comment-reply {
+    @apply flex items-center;
+  }
+  
+  .comment-reply-link {
+    @apply inline-flex items-center justify-center w-5 h-5 bg-transparent text-gray-400 no-underline rounded-full text-[0] transition-all hover:bg-gray-100 hover:text-gray-600;
+  }
+  
+  .comment-reply-link::before {
+    content: '💬';
+    @apply text-xs;
+  }
+  
+  /* 提交按钮 */
+  .form-submit {
+    @apply mt-3 text-right;
+  }
+  
+  /* 导航 */
+  .comments-navigation {
+    @apply my-8 text-center py-4 border-t border-gray-200;
+  }
+  
+  .comments-navigation a {
+    @apply inline-flex items-center gap-2 px-5 py-2 text-gray-600 no-underline font-medium mx-2 border border-gray-200 rounded-md transition-all bg-gray-50 hover:bg-gray-100 hover:text-gray-800 hover:border-gray-300;
+  }
+  
+  /* 作者评论特殊样式 */
+  .bypostauthor .comment-author-name .fn::after {
+    content: '作者';
+    @apply bg-green-600 text-white px-2 py-1 rounded text-xs font-semibold ml-2 tracking-wider;
+  }
+  
+  /* 无评论提示 */
+  .no-comments {
+    @apply text-center text-blue-400 italic my-12 p-8 bg-blue-50 rounded-xl border border-dashed border-blue-200;
+  }
+  
+  /* 头部移动端响应式设计 */
+  @media (max-width: 768px) {
+    /* 头部内容布局调整 */
+    .header-content {
+      @apply gap-2 justify-between relative;
+    }
+    
+    /* 移动端菜单按钮显示 */
+    .menu-toggle {
+      @apply flex order-1;
+    }
+    
+    /* 品牌区域居中 */
+    .site-branding {
+      @apply absolute left-1/2 transform -translate-x-1/2 gap-0 order-2;
+    }
+    
+    /* 隐藏移动端标题 */
+    .site-title-area {
+      @apply hidden;
+    }
+    
+    /* 调整Logo尺寸 */
+    .logo-placeholder {
+      @apply w-9 h-9 text-[10px];
+    }
+    
+    /* 右侧按钮区域 */
+    .header-actions {
+      @apply order-3 ml-0 gap-1;
+    }
+    
+    .search-toggle,
+    .theme-toggle {
+      @apply p-2;
+    }
+    
+    /* 移动端导航 */
+    .main-navigation {
+      @apply order-4 w-full flex-none absolute top-full left-0 right-0;
+    }
+    
+    .main-navigation ul {
+      @apply hidden flex-col gap-0 w-full absolute top-full left-0 bg-white shadow-lg rounded-b-lg p-4 m-0;
+    }
+    
+    .main-navigation ul.show {
+      @apply flex;
+    }
+    
+    .main-navigation li {
+      @apply w-full;
+    }
+    
+    .main-navigation a {
+      @apply block py-4 px-8 rounded-none border-b border-gray-100;
+    }
+    
+    .main-navigation a:hover {
+      background: rgba(0, 124, 186, 0.05);
+    }
+    
+    /* 头部整体调整 */
+    .site-header {
+      @apply py-2;
+    }
+    
+    .header-content {
+      @apply min-h-[40px];
+    }
+  }
+
+  /* 评论组件响应式设计 */
+  @media (max-width: 768px) {
+    .comments-area {
+      @apply my-6 p-4;
+    }
+    
+    .comment-list .depth-2,
+    .comment-list .depth-3,
+    .comment-list .depth-4 {
+      @apply ml-6 mt-2 mb-2;
+    }
+    
+    .comment-header {
+      @apply gap-2;
+    }
+    
+    .comment-avatar img {
+      @apply w-8 h-8;
+    }
+    
+    .comment-form {
+      @apply mb-4;
+    }
+    
+    .flex.items-start.gap-4 {
+      @apply gap-3;
+    }
+    
+    .comments-title {
+      @apply text-sm mb-3;
+    }
+    
+    .comments-navigation a {
+      @apply block my-2;
+    }
+    
+    .flex.gap-4 {
+      @apply gap-3;
+    }
+    
+    .comment-content {
+      @apply p-2 text-xs;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .comments-area {
+      @apply p-4;
+    }
+    
+    .comment-form {
+      @apply pb-4;
+    }
+    
+    .comment-body {
+      @apply py-3;
+    }
+    
+    .comment-header {
+      @apply flex-row items-start gap-2;
+    }
+    
+    .form-submit {
+      @apply text-center;
+    }
+  }
+}

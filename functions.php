@@ -145,14 +145,20 @@ add_action('widgets_init', 'xinyun_widgets_init');
  * 加载样式和脚本
  */
 function xinyun_scripts() {
-    // 主样式文件（通过根目录的style.css引入）
-    wp_enqueue_style('xinyun-style', get_stylesheet_uri(), array(), XINYUN_VERSION);
+    // 基础样式文件（最先加载）
+    wp_enqueue_style('xinyun-base-style', get_template_directory_uri() . '/assets/css/style.css', array(), XINYUN_VERSION);
     
-    // 额外的CSS文件
-    wp_enqueue_style('xinyun-main-style', get_template_directory_uri() . '/assets/css/style.css', array('xinyun-style'), XINYUN_VERSION);
+    // 主样式文件（通过根目录的style.css引入）
+    wp_enqueue_style('xinyun-style', get_stylesheet_uri(), array('xinyun-base-style'), XINYUN_VERSION);
+    
+    // Tailwind CSS (通过Vite构建) - 最后加载，确保优先级最高
+    wp_enqueue_style('xinyun-tailwind', get_template_directory_uri() . '/dist/main.css', array('xinyun-style'), XINYUN_VERSION);
+    
+    // Vite构建的JavaScript文件
+    wp_enqueue_script('xinyun-vite-js', get_template_directory_uri() . '/dist/js.js', array(), XINYUN_VERSION, true);
     
     // 主JavaScript文件
-    wp_enqueue_script('xinyun-main', get_template_directory_uri() . '/assets/js/main.js', array(), XINYUN_VERSION, true);
+    wp_enqueue_script('xinyun-main', get_template_directory_uri() . '/assets/js/main.js', array('xinyun-vite-js'), XINYUN_VERSION, true);
     
     // 如果是单篇文章且评论开放，加载评论回复脚本
     if (is_singular() && comments_open() && get_option('thread_comments')) {
