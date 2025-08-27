@@ -185,15 +185,18 @@ function xinyun_comment($comment, $args, $depth) {
     ?>
     <<?php echo $tag; ?> id="comment-<?php comment_ID(); ?>" <?php comment_class(empty($args['has_children']) ? '' : 'parent'); ?>>
     <article id="div-comment-<?php comment_ID(); ?>" class="comment-body">
-        <footer class="comment-meta">
-            <div class="comment-header">
-                <div class="comment-avatar">
-                    <?php echo get_avatar($comment, $args['avatar_size']); ?>
+        <div class="comment-header">
+            <div class="comment-avatar">
+                <?php echo get_avatar($comment, $args['avatar_size']); ?>
+            </div>
+            <div class="comment-main">
+                <div class="comment-author-name">
+                    <?php printf('<cite class="fn">%s</cite>', get_comment_author_link()); ?>
                 </div>
-                <div class="comment-header-text">
-                    <div class="comment-author-name">
-                        <?php printf('<cite class="fn">%s</cite>', get_comment_author_link()); ?>
-                    </div>
+                <div class="comment-content">
+                    <?php comment_text(); ?>
+                </div>
+                <div class="comment-meta">
                     <div class="comment-time">
                         <a href="<?php echo esc_url(get_comment_link($comment->comment_ID)); ?>">
                             <time datetime="<?php comment_time('c'); ?>">
@@ -202,23 +205,20 @@ function xinyun_comment($comment, $args, $depth) {
                         </a>
                         <?php edit_comment_link('编辑', '<span class="edit-link">', '</span>'); ?>
                     </div>
+                    <div class="comment-reply">
+                        <?php
+                        comment_reply_link(array_merge($args, array(
+                            'add_below' => 'div-comment',
+                            'depth'     => $depth,
+                            'max_depth' => $args['max_depth'],
+                        )));
+                        ?>
+                    </div>
                 </div>
             </div>
-        </footer>
-
-        <div class="comment-content">
-            <?php comment_text(); ?>
         </div>
 
-        <?php
-        comment_reply_link(array_merge($args, array(
-            'add_below' => 'div-comment',
-            'depth'     => $depth,
-            'max_depth' => $args['max_depth'],
-            'before'    => '<div class="reply">',
-            'after'     => '</div>',
-        )));
-        ?>
+
     </article>
     <?php
 }
