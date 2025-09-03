@@ -17,7 +17,7 @@ get_header(); ?>
             <?php echo xinyun_render_carousel(); ?>
             
             <!-- 首页：全宽布局，无侧边栏 -->
-            <main class="content-area" style="max-width: 800px; margin: 0 auto;">
+            <main class="content-area">
         <?php else : ?>
             <!-- 其他页面：包含侧边栏的布局 -->
             <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
@@ -32,71 +32,80 @@ get_header(); ?>
                         </header>
                     <?php endif; ?>
 
-                    <?php while (have_posts()) : the_post(); ?>
-                        
-                        <article id="post-<?php the_ID(); ?>" <?php post_class('post'); ?>>
+                    <?php if (is_home() || is_front_page() || is_category() || is_tag() || is_archive()) : ?>
+                        <!-- 卡片网格布局 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+                            <?php while (have_posts()) : the_post(); ?>
+                                <?php get_template_part('template-parts/content/post-card'); ?>
+                            <?php endwhile; ?>
+                        </div>
+                    <?php else : ?>
+                        <!-- 单页面保持原有布局 -->
+                        <?php while (have_posts()) : the_post(); ?>
                             
-                            <header class="entry-header">
-                                <?php
-                                if (is_singular()) :
-                                    the_title('<h1 class="entry-title">', '</h1>');
-                                else :
-                                    the_title('<h2 class="entry-title"><a href="' . esc_url(get_permalink()) . '" rel="bookmark">', '</a></h2>');
-                                endif;
-                                ?>
+                            <article id="post-<?php the_ID(); ?>" <?php post_class('post'); ?>>
                                 
-                                <?php if ('post' === get_post_type()) : ?>
-                                    <div class="entry-meta">
-                                        <span class="posted-on">
-                                            发布于 <time datetime="<?php echo get_the_date('c'); ?>"><?php echo get_the_date(); ?></time>
-                                        </span>
-                                        <span class="byline">
-                                            作者：<a href="<?php echo esc_url(get_author_posts_url(get_the_author_meta('ID'))); ?>"><?php the_author(); ?></a>
-                                        </span>
-                                        <?php if (has_category()) : ?>
-                                            <span class="cat-links">
-                                                分类：<?php the_category(', '); ?>
+                                <header class="entry-header">
+                                    <?php
+                                    if (is_singular()) :
+                                        the_title('<h1 class="entry-title">', '</h1>');
+                                    else :
+                                        the_title('<h2 class="entry-title"><a href="' . esc_url(get_permalink()) . '" rel="bookmark">', '</a></h2>');
+                                    endif;
+                                    ?>
+                                    
+                                    <?php if ('post' === get_post_type()) : ?>
+                                        <div class="entry-meta">
+                                            <span class="posted-on">
+                                                发布于 <time datetime="<?php echo get_the_date('c'); ?>"><?php echo get_the_date(); ?></time>
                                             </span>
-                                        <?php endif; ?>
+                                            <span class="byline">
+                                                作者：<a href="<?php echo esc_url(get_author_posts_url(get_the_author_meta('ID'))); ?>"><?php the_author(); ?></a>
+                                            </span>
+                                            <?php if (has_category()) : ?>
+                                                <span class="cat-links">
+                                                    分类：<?php the_category(', '); ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </header>
+
+                                <?php if (has_post_thumbnail() && !is_singular()) : ?>
+                                    <div class="post-thumbnail">
+                                        <a href="<?php the_permalink(); ?>">
+                                            <?php the_post_thumbnail('large', array('style' => 'width: 100%; height: auto; border-radius: 5px;')); ?>
+                                        </a>
                                     </div>
                                 <?php endif; ?>
-                            </header>
 
-                            <?php if (has_post_thumbnail() && !is_singular()) : ?>
-                                <div class="post-thumbnail">
-                                    <a href="<?php the_permalink(); ?>">
-                                        <?php the_post_thumbnail('large', array('style' => 'width: 100%; height: auto; border-radius: 5px;')); ?>
-                                    </a>
+                                <div class="entry-content">
+                                    <?php
+                                    if (is_singular()) :
+                                        the_content();
+                                    else :
+                                        the_excerpt();
+                                        echo '<p><a href="' . esc_url(get_permalink()) . '" class="btn">阅读更多</a></p>';
+                                    endif;
+
+                                    wp_link_pages(array(
+                                        'before' => '<div class="page-links">页面：',
+                                        'after'  => '</div>',
+                                    ));
+                                    ?>
                                 </div>
-                            <?php endif; ?>
 
-                            <div class="entry-content">
-                                <?php
-                                if (is_singular()) :
-                                    the_content();
-                                else :
-                                    the_excerpt();
-                                    echo '<p><a href="' . esc_url(get_permalink()) . '" class="btn">阅读更多</a></p>';
-                                endif;
+                                <?php if (is_singular() && has_tag()) : ?>
+                                    <footer class="entry-footer">
+                                        <div class="tag-links">
+                                            标签：<?php the_tags('', ', ', ''); ?>
+                                        </div>
+                                    </footer>
+                                <?php endif; ?>
 
-                                wp_link_pages(array(
-                                    'before' => '<div class="page-links">页面：',
-                                    'after'  => '</div>',
-                                ));
-                                ?>
-                            </div>
+                            </article>
 
-                            <?php if (is_singular() && has_tag()) : ?>
-                                <footer class="entry-footer">
-                                    <div class="tag-links">
-                                        标签：<?php the_tags('', ', ', ''); ?>
-                                    </div>
-                                </footer>
-                            <?php endif; ?>
-
-                        </article>
-
-                        <?php if (is_singular()) : ?>
+                            <?php if (is_singular()) : ?>
                             <?php
                             // 文章导航
                             $prev_post = get_previous_post();
@@ -131,9 +140,10 @@ get_header(); ?>
                                 comments_template();
                             endif;
                             ?>
-                        <?php endif; ?>
+                            <?php endif; ?>
 
-                    <?php endwhile; ?>
+                        <?php endwhile; ?>
+                    <?php endif; ?>
 
                     <?php
                     // 分页导航
