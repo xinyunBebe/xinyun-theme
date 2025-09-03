@@ -174,17 +174,32 @@ class Xinyun_Theme_Options {
      * 数据清理和验证
      */
     public function sanitize_options(array $input): array {
-        $sanitized_input = [];
+        // 合并已有选项，避免跨分区保存时覆盖其他设置
+        $existing_options = $this->get_options();
+        $sanitized = is_array($existing_options) ? $existing_options : [];
 
-        // 颜色字段验证
+        // 识别当前保存分区（basic/homepage/post）
+        $current_section = $input['__current_section'] ?? null;
+        if (isset($input['__current_section'])) {
+            unset($input['__current_section']);
+        }
+
+        // 各分区字段清单（用于在当前分区内处理缺省提交的checkbox为false）
+        $section_boolean_fields = [
+            'homepage' => ['homepage_carousel_autoplay', 'homepage_carousel_arrows', 'homepage_carousel_pagination'],
+            'post' => ['show_featured_image', 'show_author_info', 'show_post_date', 'show_categories'],
+            'basic' => []
+        ];
+
+        // 颜色字段验证（仅处理本次提交中出现的字段）
         $color_fields = ['primary_color', 'secondary_color'];
         foreach ($color_fields as $field) {
             if (isset($input[$field])) {
-                $sanitized_input[$field] = sanitize_hex_color($input[$field]) ?: '#007cba';
+                $sanitized[$field] = sanitize_hex_color($input[$field]) ?: '#007cba';
             }
         }
 
-        // 数字字段验证
+        // 数字字段验证（仅处理本次提交中出现的字段）
         $number_fields = [
             'container_width' => ['min' => 800, 'max' => 1600],
             'homepage_carousel_height' => ['min' => 200, 'max' => 800],
@@ -192,39 +207,23 @@ class Xinyun_Theme_Options {
             'homepage_carousel_posts_count' => ['min' => 3, 'max' => 10],
             'excerpt_length' => ['min' => 10, 'max' => 100]
         ];
-
-        // 新增：处理默认特色图片ID
-        if (isset($input['default_featured_image'])) {
-            $sanitized_input['default_featured_image'] = absint($input['default_featured_image']);
-        }
-
         foreach ($number_fields as $field => $range) {
             if (isset($input[$field])) {
                 $value = intval($input[$field]);
-                $sanitized_input[$field] = max($range['min'], min($range['max'], $value));
+                $sanitized[$field] = max($range['min'], min($range['max'], $value));
             }
         }
 
-        // 布尔字段验证
-        $boolean_fields = [
-            'homepage_carousel_autoplay',
-            'homepage_carousel_arrows',
-            'homepage_carousel_pagination',
-            'show_featured_image',
-            'show_author_info',
-            'show_post_date',
-            'show_categories'
-        ];
-
-        foreach ($boolean_fields as $field) {
-            $sanitized_input[$field] = isset($input[$field]) ? (bool)$input[$field] : false;
+        // 默认特色图片（仅当提交中携带时才更新）
+        if (isset($input['default_featured_image'])) {
+            $sanitized['default_featured_image'] = absint($input['default_featured_image']);
         }
 
         // 下拉选择字段验证
         if (isset($input['homepage_carousel_type'])) {
             $carousel_manager = Xinyun_Carousel_Manager::get_instance();
             $valid_types = array_keys($carousel_manager->get_carousel_choices());
-            $sanitized_input['homepage_carousel_type'] = in_array($input['homepage_carousel_type'], $valid_types)
+            $sanitized['homepage_carousel_type'] = in_array($input['homepage_carousel_type'], $valid_types)
                 ? $input['homepage_carousel_type']
                 : 'post';
         }
@@ -263,10 +262,26 @@ class Xinyun_Theme_Options {
                 }
             }
 
-            $sanitized_input['homepage_carousel_custom_slides'] = $sanitized_slides;
+            $sanitized['homepage_carousel_custom_slides'] = $sanitized_slides;
         }
 
-        return $sanitized_input;
+        // 布尔字段：仅更新当前分区内的布尔字段；
+        // 对于当前分区中未提交的checkbox，显式置为false；其他分区保持不变
+        if ($current_section && isset($section_boolean_fields[$current_section])) {
+            foreach ($section_boolean_fields[$current_section] as $field) {
+                $sanitized[$field] = isset($input[$field]) ? (bool)$input[$field] : false;
+            }
+        } else {
+            // 若未知分区，仅处理此次提交中出现的布尔字段
+            $all_boolean_fields = array_merge(...array_values($section_boolean_fields));
+            foreach ($all_boolean_fields as $field) {
+                if (isset($input[$field])) {
+                    $sanitized[$field] = (bool)$input[$field];
+                }
+            }
+        }
+
+        return $sanitized;
     }
 
     /**
@@ -347,6 +362,7 @@ class Xinyun_Theme_Options {
                     <?php
                     settings_fields($this->option_name . '_group');
                     do_settings_sections($this->page_slug . '_basic');
+                    echo '<input type="hidden" name="' . esc_attr($this->option_name) . '[__current_section]" value="basic" />';
                     submit_button('保存基础设置', 'primary', 'submit', false);
                     ?>
                 </form>
@@ -357,6 +373,7 @@ class Xinyun_Theme_Options {
                     <?php
                     settings_fields($this->option_name . '_group');
                     do_settings_sections($this->page_slug . '_homepage');
+                    echo '<input type="hidden" name="' . esc_attr($this->option_name) . '[__current_section]" value="homepage" />';
                     submit_button('保存首页设置', 'primary', 'submit', false);
                     ?>
                 </form>
@@ -367,6 +384,7 @@ class Xinyun_Theme_Options {
                     <?php
                     settings_fields($this->option_name . '_group');
                     do_settings_sections($this->page_slug . '_post');
+                    echo '<input type="hidden" name="' . esc_attr($this->option_name) . '[__current_section]" value="post" />';
                     submit_button('保存文章设置', 'primary', 'submit', false);
                     ?>
                 </form>

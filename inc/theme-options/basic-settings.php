@@ -173,8 +173,8 @@ class Xinyun_Basic_Settings {
         $field_name = $args['field_name'];
         $image_id = $options[$field_name] ?? '';
 
-        echo '<div class="image-upload-wrapper" id="' . esc_attr($field_name) . '_wrapper">';
-        echo '<div class="image-preview" style="margin: 10px 0; min-height: 100px; border: 2px dashed #ddd; padding: 10px; display: inline-block;">';
+        echo '<div class="basic-image-upload-wrapper" id="' . esc_attr($field_name) . '_wrapper">';
+        echo '<div class="basic-image-preview" style="margin: 10px 0; min-height: 100px; border: 2px dashed #ddd; padding: 10px; display: inline-block;">';
         if ($image_id) {
             $image_url = wp_get_attachment_image_url($image_id, 'medium');
             if ($image_url) {
@@ -182,9 +182,9 @@ class Xinyun_Basic_Settings {
             }
         }
         echo '</div><br>';
-        echo '<input type="hidden" name="' . $this->theme_options->get_option_name() . '[' . $field_name . ']" value="' . esc_attr($image_id) . '" class="image-id-input">';
-        echo '<button type="button" class="button select-image">选择图片</button>';
-        echo '<button type="button" class="button remove-image" style="margin-left: 10px;' . (!$image_id ? ' display:none;' : '') . '">移除图片</button>';
+        echo '<input type="hidden" name="' . $this->theme_options->get_option_name() . '[' . $field_name . ']" value="' . esc_attr($image_id) . '" class="basic-image-id-input">';
+        echo '<button type="button" class="button basic-select-image">选择图片</button>';
+        echo '<button type="button" class="button basic-remove-image" style="margin-left: 10px;' . (!$image_id ? ' display:none;' : '') . '">移除图片</button>';
         echo '</div>';
 
         if (!empty($args['description'])) {
@@ -198,53 +198,56 @@ class Xinyun_Basic_Settings {
      * 添加媒体选择器所需的JavaScript
      */
     private function add_media_selector_assets(): void {
-        static $added = false;
-        if ($added) {
+        static $basic_media_added = false;
+        if ($basic_media_added) {
             return;
         }
-        $added = true;
+        $basic_media_added = true;
 
         wp_enqueue_media();
 
         $js_code = <<<JS
         <script type="text/javascript">
-        jQuery(document).ready(function($) {
-            var mediaUploader;
+        (function($) {
+            "use strict";
+            
+            // 基础设置专用的媒体选择器
+            var basicMediaUploader;
 
-            $(document).on("click", ".image-upload-wrapper .select-image", function(e) {
+            $(document).on("click", ".basic-select-image", function(e) {
                 e.preventDefault();
-                var wrapper = $(this).closest('.image-upload-wrapper');
+                var wrapper = $(this).closest('.basic-image-upload-wrapper');
 
-                if (mediaUploader) {
-                    mediaUploader.open();
+                if (basicMediaUploader) {
+                    basicMediaUploader.open();
                     return;
                 }
 
-                mediaUploader = wp.media.frames.file_frame = wp.media({
+                basicMediaUploader = wp.media.frames.basic_file_frame = wp.media({
                     title: "选择图片",
                     button: { text: "选择此图片" },
                     multiple: false
                 });
 
-                mediaUploader.on("select", function() {
-                    var attachment = mediaUploader.state().get("selection").first().toJSON();
-                    wrapper.find(".image-id-input").val(attachment.id);
+                basicMediaUploader.on("select", function() {
+                    var attachment = basicMediaUploader.state().get("selection").first().toJSON();
+                    wrapper.find(".basic-image-id-input").val(attachment.id);
                     var imageUrl = attachment.sizes && attachment.sizes.medium ? attachment.sizes.medium.url : attachment.url;
-                    wrapper.find(".image-preview").html('<img src="' + imageUrl + '" style="max-width: 200px; height: auto;">');
-                    wrapper.find(".remove-image").show();
+                    wrapper.find(".basic-image-preview").html('<img src="' + imageUrl + '" style="max-width: 200px; height: auto;">');
+                    wrapper.find(".basic-remove-image").show();
                 });
 
-                mediaUploader.open();
+                basicMediaUploader.open();
             });
 
-            $(document).on("click", ".image-upload-wrapper .remove-image", function(e) {
+            $(document).on("click", ".basic-remove-image", function(e) {
                 e.preventDefault();
-                var wrapper = $(this).closest('.image-upload-wrapper');
-                wrapper.find(".image-id-input").val("");
-                wrapper.find(".image-preview").html("");
+                var wrapper = $(this).closest('.basic-image-upload-wrapper');
+                wrapper.find(".basic-image-id-input").val("");
+                wrapper.find(".basic-image-preview").html("");
                 $(this).hide();
             });
-        });
+        })(jQuery);
         </script>
 JS;
         echo $js_code;

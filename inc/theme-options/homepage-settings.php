@@ -303,7 +303,7 @@ class Xinyun_Homepage_Settings {
         // 图片选择
         echo '<div style="margin-bottom: 15px;">';
         echo '<label><strong>选择图片：</strong></label><br>';
-        echo '<div class="image-preview" style="margin: 10px 0;">';
+        echo '<div class="carousel-image-preview" style="margin: 10px 0;">';
 
         if ($image_id) {
             $image_url = wp_get_attachment_image_url($image_id, 'medium');
@@ -313,10 +313,10 @@ class Xinyun_Homepage_Settings {
         }
 
         echo '</div>';
-        echo '<input type="hidden" name="' . $this->theme_options->get_option_name() . '[' . $field_name . '][' . $index . '][image_id]" value="' . esc_attr($image_id) . '" class="image-id-input">';
-        echo '<button type="button" class="button select-image" data-index="' . $index . '">选择图片</button>';
+        echo '<input type="hidden" name="' . $this->theme_options->get_option_name() . '[' . $field_name . '][' . $index . '][image_id]" value="' . esc_attr($image_id) . '" class="carousel-image-id-input">';
+        echo '<button type="button" class="button carousel-select-image" data-index="' . $index . '">选择图片</button>';
         if ($image_id) {
-            echo '<button type="button" class="button remove-image" data-index="' . $index . '" style="margin-left: 10px;">移除图片</button>';
+            echo '<button type="button" class="button carousel-remove-image" data-index="' . $index . '" style="margin-left: 10px;">移除图片</button>';
         }
         echo '</div>';
 
@@ -348,60 +348,69 @@ class Xinyun_Homepage_Settings {
      * 添加媒体选择器相关资源
      */
     private function add_media_selector_assets(): void {
+        static $carousel_media_added = false;
+        if ($carousel_media_added) {
+            return;
+        }
+        $carousel_media_added = true;
+
         // 加载WordPress媒体库
         wp_enqueue_media();
 
         // 添加自定义JavaScript
         echo '<script type="text/javascript">
-        jQuery(document).ready(function($) {
-            var mediaUploader;
+        (function($) {
+            "use strict";
+            
+            // 轮播图设置专用的媒体选择器
+            var carouselMediaUploader;
 
             // 选择图片按钮点击事件
-            $(document).on("click", ".select-image", function(e) {
+            $(document).on("click", ".carousel-select-image", function(e) {
                 e.preventDefault();
                 var button = $(this);
                 var index = button.data("index");
 
-                if (mediaUploader) {
-                    mediaUploader.open();
+                if (carouselMediaUploader) {
+                    carouselMediaUploader.open();
                     return;
                 }
 
-                mediaUploader = wp.media({
+                carouselMediaUploader = wp.media.frames.carousel_file_frame = wp.media({
                     title: "选择轮播图片",
                     button: { text: "选择图片" },
                     multiple: false
                 });
 
-                mediaUploader.on("select", function() {
-                    var attachment = mediaUploader.state().get("selection").first().toJSON();
+                carouselMediaUploader.on("select", function() {
+                    var attachment = carouselMediaUploader.state().get("selection").first().toJSON();
                     var container = button.closest(".slide-config");
 
                     // 更新隐藏字段
-                    container.find(".image-id-input").val(attachment.id);
+                    container.find(".carousel-image-id-input").val(attachment.id);
 
                     // 更新预览图片
                     var imageUrl = attachment.sizes && attachment.sizes.medium ?
                                    attachment.sizes.medium.url : attachment.url;
-                    container.find(".image-preview").html(
+                    container.find(".carousel-image-preview").html(
                         "<img src=\"" + imageUrl + "\" style=\"max-width: 200px; height: auto; border: 1px solid #ddd; border-radius: 3px;\">"
                     );
 
                     // 添加移除按钮
-                    if (!container.find(".remove-image").length) {
-                        button.after("<button type=\"button\" class=\"button remove-image\" data-index=\"" + index + "\" style=\"margin-left: 10px;\">移除图片</button>");
+                    if (!container.find(".carousel-remove-image").length) {
+                        button.after("<button type=\"button\" class=\"button carousel-remove-image\" data-index=\"" + index + "\" style=\"margin-left: 10px;\">移除图片</button>");
                     }
                 });
 
-                mediaUploader.open();
+                carouselMediaUploader.open();
             });
 
             // 移除图片按钮点击事件
-            $(document).on("click", ".remove-image", function(e) {
+            $(document).on("click", ".carousel-remove-image", function(e) {
                 e.preventDefault();
                 var container = $(this).closest(".slide-config");
-                container.find(".image-id-input").val("");
-                container.find(".image-preview").html("");
+                container.find(".carousel-image-id-input").val("");
+                container.find(".carousel-image-preview").html("");
                 $(this).remove();
             });
 
@@ -434,9 +443,9 @@ class Xinyun_Homepage_Settings {
                     \'<h4>轮播图 \' + (slideCount + 1) + \'</h4>\' +
                     \'<div style="margin-bottom: 15px;">\' +
                     \'<label><strong>选择图片：</strong></label><br>\' +
-                    \'<div class="image-preview" style="margin: 10px 0;"></div>\' +
-                    \'<input type="hidden" name="' . $this->theme_options->get_option_name() . '[homepage_carousel_custom_slides][\' + slideCount + \'][image_id]" value="" class="image-id-input">\' +
-                    \'<button type="button" class="button select-image" data-index="\' + slideCount + \'">选择图片</button>\' +
+                    \'<div class="carousel-image-preview" style="margin: 10px 0;"></div>\' +
+                    \'<input type="hidden" name="' . $this->theme_options->get_option_name() . '[homepage_carousel_custom_slides][\' + slideCount + \'][image_id]" value="" class="carousel-image-id-input">\' +
+                    \'<button type="button" class="button carousel-select-image" data-index="\' + slideCount + \'">选择图片</button>\' +
                     \'</div>\' +
                     \'<div>\' +
                     \'<label for="post-id-\' + slideCount + \'"><strong>文章ID：</strong></label><br>\' +
@@ -458,7 +467,7 @@ class Xinyun_Homepage_Settings {
                     alert("至少需要保留一个轮播图配置");
                 }
             });
-        });
+        })(jQuery);
         </script>';
     }
 }
