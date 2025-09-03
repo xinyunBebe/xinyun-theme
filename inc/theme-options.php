@@ -193,6 +193,11 @@ class Xinyun_Theme_Options {
             'excerpt_length' => ['min' => 10, 'max' => 100]
         ];
 
+        // 新增：处理默认特色图片ID
+        if (isset($input['default_featured_image'])) {
+            $sanitized_input['default_featured_image'] = absint($input['default_featured_image']);
+        }
+
         foreach ($number_fields as $field => $range) {
             if (isset($input[$field])) {
                 $value = intval($input[$field]);

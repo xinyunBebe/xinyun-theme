@@ -28,16 +28,28 @@ if (!defined('ABSPATH')) {
 
 <article id="post-<?php the_ID(); ?>" <?php post_class('bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300 group'); ?>>
     
-    <?php if (has_post_thumbnail()) : ?>
+    <?php
+    $thumbnail_url = '';
+    $thumbnail_alt = the_title_attribute(['echo' => false]);
+
+    if (has_post_thumbnail()) {
+        $thumbnail_url = get_the_post_thumbnail_url(get_the_ID(), 'xinyun-featured');
+    } else {
+        $theme_options = get_option('xinyun_theme_options');
+        $default_image_id = $theme_options['default_featured_image'] ?? null;
+        if ($default_image_id) {
+            $thumbnail_url = wp_get_attachment_image_url($default_image_id, 'xinyun-featured');
+            $thumbnail_alt = get_post_meta($default_image_id, '_wp_attachment_image_alt', true) ?: $thumbnail_alt;
+        }
+    }
+
+    if ($thumbnail_url) : ?>
         <div class="relative aspect-[16/9] overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50">
             <a href="<?php the_permalink(); ?>" class="block h-full">
-                <?php 
-                the_post_thumbnail('xinyun-featured', [
-                    'class' => 'w-full h-full object-cover transition-transform duration-300 group-hover:scale-105',
-                    'alt' => the_title_attribute(['echo' => false]),
-                    'loading' => 'lazy'
-                ]); 
-                ?>
+                <img src="<?php echo esc_url($thumbnail_url); ?>" 
+                     class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
+                     alt="<?php echo esc_attr($thumbnail_alt); ?>" 
+                     loading="lazy">
             </a>
             
             <!-- 分类标签 -->
