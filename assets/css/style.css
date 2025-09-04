@@ -302,36 +302,44 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* 自定义箭头样式 */
-.hero-carousel .splide__arrow {
-    background: rgba(255, 255, 255, 0.9);
-    color: #333;
+/* 自定义箭头样式：移除圆形背景，仅保留箭头图标 */
+.hero-carousel .splide__arrow,
+.custom-carousel .splide__arrow {
+    background: transparent;
+    color: #ffffff;
     border: none;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    padding: 0.25rem; /* 保留点击热区，但不显示底色 */
+    box-shadow: none;
 }
 
-.hero-carousel .splide__arrow:hover {
-    background: white;
-    color: #007cba;
-    /* 移除 transform: scale(1.1) 避免悬浮时位置变化 */
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+.hero-carousel .splide__arrow:hover,
+.custom-carousel .splide__arrow:hover,
+.gallery-carousel .splide__arrow:hover {
+    background: transparent;
+    color: #cce7ff;
+    border-radius: 0;
+    padding: 0.25rem;
+    box-shadow: none;
 }
 
-.hero-carousel .splide__arrow svg {
-    width: 24px;
-    height: 24px;
+.hero-carousel .splide__arrow svg,
+.custom-carousel .splide__arrow svg,
+.gallery-carousel .splide__arrow svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
 }
 
-.hero-carousel .splide__arrow--prev {
+.hero-carousel .splide__arrow--prev,
+.custom-carousel .splide__arrow--prev {
     left: 20px;
 }
 
-.hero-carousel .splide__arrow--next {
+.hero-carousel .splide__arrow--next,
+.custom-carousel .splide__arrow--next {
     right: 20px;
 }
 
@@ -341,20 +349,23 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
     z-index: 3;
 }
 
-.hero-carousel .splide__pagination__page {
-    background: rgba(255, 255, 255, 0.5);
+.hero-carousel .splide__pagination__page,
+.custom-carousel .splide__pagination__page,
+.gallery-carousel .splide__pagination__page {
+    background: rgba(255, 255, 255, 0.6);
     border-radius: 50%;
-    width: 12px;
-    height: 12px;
-    margin: 0 6px;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
+    width: 8px;
+    height: 8px;
+    margin: 0 4px;
+    transition: all 0.2s ease;
 }
 
-.hero-carousel .splide__pagination__page.is-active {
-    background: white;
-    transform: scale(1.2);
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+.hero-carousel .splide__pagination__page.is-active,
+.custom-carousel .splide__pagination__page.is-active,
+.gallery-carousel .splide__pagination__page.is-active {
+    background: #ffffff;
+    transform: scale(1.1);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
 }
 
 /* 响应式设计 */
@@ -397,8 +408,10 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
         height: 40px;
     }
 
-    .hero-carousel .splide__arrow svg {
-        width: 20px;
-        height: 20px;
+    .hero-carousel .splide__arrow svg,
+    .custom-carousel .splide__arrow svg,
+    .gallery-carousel .splide__arrow svg {
+        width: 16px;
+        height: 16px;
     }
 }

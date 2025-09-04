@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const lazyLoad = container.getAttribute('data-lazy') || 'nearby';
 
     try {
-      new Splide(el, {
+      const instance = new Splide(el, {
         type,
         autoplay,
         interval,
@@ -61,6 +61,30 @@ document.addEventListener('DOMContentLoaded', function() {
         lazyLoad,
         breakpoints: { 768: { height: mobileHeight, arrows: false } },
       }).mount();
+
+      // 修复：点击箭头或指示器产生的 focus 导致 focus-within 持续，鼠标移出仍显示 UI
+      const clearFocus = () => {
+        const ae = document.activeElement;
+        if (ae && container.contains(ae) && typeof ae.blur === 'function') {
+          ae.blur();
+        }
+      };
+      container.addEventListener('mouseleave', clearFocus);
+      container.addEventListener('pointerleave', clearFocus);
+
+      // 点击后立即移除焦点，避免 focus-within 持续
+      const bindDefocus = (node) => {
+        if (!node) return;
+        ['click', 'mouseup', 'touchend'].forEach((evt) => {
+          node.addEventListener(evt, () => {
+            if (document.activeElement === node && typeof node.blur === 'function') {
+              node.blur();
+            }
+          }, { passive: true });
+        });
+      };
+      const focusables = container.querySelectorAll('.splide__arrow, .splide__pagination__page');
+      focusables.forEach(bindDefocus);
     } catch (e) {
       console.error('Splide init failed:', e);
     }
