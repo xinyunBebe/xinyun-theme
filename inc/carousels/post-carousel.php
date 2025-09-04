@@ -118,6 +118,14 @@ class Xinyun_Post_Carousel extends Xinyun_Carousel_Base {
                     }
                 }
                 
+                // 覆盖标题与链接（用户手动输入优先）
+                if (!empty($slide_config['title'])) {
+                    $post_data['title'] = $slide_config['title'];
+                }
+                if (!empty($slide_config['link'])) {
+                    $post_data['url'] = $slide_config['link'];
+                }
+                
                 // 如果还是没有图片，使用默认特色图片
                 if (empty($image_url)) {
                     $theme_options = Xinyun_Theme_Options::get_instance();

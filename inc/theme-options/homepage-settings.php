@@ -297,51 +297,56 @@ class Xinyun_Homepage_Settings {
         $image_id = $slide['image_id'] ?? '';
         $post_id = $slide['post_id'] ?? '';
 
-        echo '<div class="slide-config" data-index="' . $index . '" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 5px; background: #fafafa;">';
-        echo '<h4>轮播图 ' . ($index + 1) . '</h4>';
-
-        // 图片选择
-        echo '<div style="margin-bottom: 15px;">';
-        echo '<label><strong>选择图片：</strong></label><br>';
-        echo '<div class="carousel-image-preview" style="margin: 10px 0;">';
+        echo '<div class="slide-config" data-index="' . $index . '" style="border: 1px solid #ddd; padding: 12px; margin-bottom: 12px; border-radius: 6px; background: #fafafa;">';
+        echo '<div class="slide-grid" style="display:flex; gap:16px; align-items:stretch;">';
+        // 左侧：图片
+        echo '<div class="slide-left" style="width: 180px; flex: 0 0 180px; display:flex; flex-direction:column;">';
+        echo '<label style="margin-bottom:6px;"><strong>图片</strong></label>';
+        echo '<div class="carousel-image-preview" style="margin: 6px 0; min-height:100px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px dashed #ddd; border-radius:4px; overflow:hidden;">';
 
         if ($image_id) {
             $image_url = wp_get_attachment_image_url($image_id, 'medium');
             if ($image_url) {
-                echo '<img src="' . esc_url($image_url) . '" style="max-width: 200px; height: auto; border: 1px solid #ddd; border-radius: 3px;">';
+                echo '<img src="' . esc_url($image_url) . '" style="max-width: 100%; height: auto; display:block;">';
             }
         }
-
         echo '</div>';
         echo '<input type="hidden" name="' . $this->theme_options->get_option_name() . '[' . $field_name . '][' . $index . '][image_id]" value="' . esc_attr($image_id) . '" class="carousel-image-id-input">';
+        echo '<div style="display:flex; gap:8px; margin-top:6px;">';
         echo '<button type="button" class="button carousel-select-image" data-index="' . $index . '">选择图片</button>';
         if ($image_id) {
-            echo '<button type="button" class="button carousel-remove-image" data-index="' . $index . '" style="margin-left: 10px;">移除图片</button>';
+            echo '<button type="button" class="button carousel-remove-image" data-index="' . $index . '" style="margin-left: 6px;">移除图片</button>';
         }
         echo '</div>';
+        echo '</div>'; // slide-left
 
-        // 文章ID选择
-        echo '<div>';
-        echo '<label for="post-id-' . $index . '"><strong>文章ID：</strong></label><br>';
-        echo '<input type="number" id="post-id-' . $index . '" name="' . $this->theme_options->get_option_name() . '[' . $field_name . '][' . $index . '][post_id]" value="' . esc_attr($post_id) . '" min="1" style="width: 100px;" placeholder="留空自动选择">';
+        // 右侧：标题与链接（可选文章ID）
+        $title = $slide['title'] ?? '';
+        $link = $slide['link'] ?? '';
+        echo '<div class="slide-right" style="flex:1; display:flex; flex-direction:column; gap:10px;">';
+        echo '<div><label for="slide-title-' . $index . '"><strong>标题</strong></label><br>';
+        echo '<input type="text" id="slide-title-' . $index . '" name="' . $this->theme_options->get_option_name() . '[' . $field_name . '][' . $index . '][title]" value="' . esc_attr($title) . '" style="width: 100%;" placeholder="输入标题（可选，留空将使用文章标题）"></div>';
+        echo '<div><label for="slide-link-' . $index . '"><strong>链接</strong></label><br>';
+        echo '<input type="url" id="slide-link-' . $index . '" name="' . $this->theme_options->get_option_name() . '[' . $field_name . '][' . $index . '][link]" value="' . esc_attr($link) . '" style="width: 100%;" placeholder="输入链接（可选，留空将使用文章链接）"></div>';
+
+        echo '<div><label for="post-id-' . $index . '"><strong>文章ID（可选）</strong></label><br>';
+        echo '<input type="number" id="post-id-' . $index . '" name="' . $this->theme_options->get_option_name() . '[' . $field_name . '][' . $index . '][post_id]" value="' . esc_attr($post_id) . '" min="1" style="width: 120px;" placeholder="留空不绑定">';
         echo '<button type="button" class="button preview-post" data-index="' . $index . '" style="margin-left: 10px;">预览文章</button>';
 
-        // 显示文章信息
         if ($post_id) {
             $post = get_post($post_id);
             if ($post) {
-                echo '<div style="margin-top: 10px; padding: 10px; background: #e8f4f8; border-radius: 3px;">';
-                echo '<strong>文章：</strong>' . esc_html($post->post_title) . '<br>';
-                echo '<strong>状态：</strong>' . esc_html($post->post_status) . '<br>';
-                echo '<a href="' . esc_url(get_permalink($post_id)) . '" target="_blank">查看文章</a>';
+                echo '<div style="margin-top: 8px; padding: 8px; background: #e8f4f8; border-radius: 3px;">';
+                echo '<strong>文章：</strong>' . esc_html($post->post_title) . '（' . esc_html($post->post_status) . '）';
+                echo ' <a href="' . esc_url(get_permalink($post_id)) . '" target="_blank">查看</a>';
                 echo '</div>';
             } else {
-                echo '<div style="margin-top: 10px; padding: 10px; background: #ffeaa7; border-radius: 3px; color: #d63031;">文章ID不存在</div>';
+                echo '<div style="margin-top: 8px; padding: 8px; background: #ffeaa7; border-radius: 3px; color: #d63031;">文章ID不存在</div>';
             }
         }
-
-        echo '</div>';
-        echo '</div>';
+        echo '</div>'; // slide-right
+        echo '</div>'; // slide-grid
+        echo '</div>'; // slide-config
     }
 
     /**
@@ -357,12 +362,16 @@ class Xinyun_Homepage_Settings {
         // 加载WordPress媒体库
         wp_enqueue_media();
 
-        // 添加自定义JavaScript
-        echo '<script type="text/javascript">
+        // 获取变量
+        $option_name = $this->theme_options->get_option_name();
+        $admin_url = admin_url('post.php');
+        
+        // 输出JavaScript
+        ?>
+        <script type="text/javascript">
         (function($) {
             "use strict";
-            
-            // 轮播图设置专用的媒体选择器
+            var opt = "<?php echo esc_js($option_name); ?>";
             var carouselMediaUploader;
 
             // 选择图片按钮点击事件
@@ -393,12 +402,12 @@ class Xinyun_Homepage_Settings {
                     var imageUrl = attachment.sizes && attachment.sizes.medium ?
                                    attachment.sizes.medium.url : attachment.url;
                     container.find(".carousel-image-preview").html(
-                        "<img src=\"" + imageUrl + "\" style=\"max-width: 200px; height: auto; border: 1px solid #ddd; border-radius: 3px;\">"
+                        "<img src='" + imageUrl + "' style='max-width: 100%; height: auto; display:block;'>"
                     );
 
                     // 添加移除按钮
                     if (!container.find(".carousel-remove-image").length) {
-                        button.after("<button type=\"button\" class=\"button carousel-remove-image\" data-index=\"" + index + "\" style=\"margin-left: 10px;\">移除图片</button>");
+                        button.after("<button type='button' class='button carousel-remove-image' data-index='" + index + "' style='margin-left: 10px;'>移除图片</button>");
                     }
                 });
 
@@ -425,7 +434,7 @@ class Xinyun_Homepage_Settings {
                     return;
                 }
 
-                var postUrl = "' . admin_url('post.php') . '?post=" + postId + "&action=edit";
+                var postUrl = "<?php echo esc_js($admin_url); ?>?post=" + postId + "&action=edit";
                 window.open(postUrl, "_blank");
             });
 
@@ -439,20 +448,27 @@ class Xinyun_Homepage_Settings {
                     return;
                 }
 
-                var newSlide = \'<div class="slide-config" data-index="\' + slideCount + \'" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 5px; background: #fafafa;">\' +
-                    \'<h4>轮播图 \' + (slideCount + 1) + \'</h4>\' +
-                    \'<div style="margin-bottom: 15px;">\' +
-                    \'<label><strong>选择图片：</strong></label><br>\' +
-                    \'<div class="carousel-image-preview" style="margin: 10px 0;"></div>\' +
-                    \'<input type="hidden" name="' . $this->theme_options->get_option_name() . '[homepage_carousel_custom_slides][\' + slideCount + \'][image_id]" value="" class="carousel-image-id-input">\' +
-                    \'<button type="button" class="button carousel-select-image" data-index="\' + slideCount + \'">选择图片</button>\' +
-                    \'</div>\' +
-                    \'<div>\' +
-                    \'<label for="post-id-\' + slideCount + \'"><strong>文章ID：</strong></label><br>\' +
-                    \'<input type="number" id="post-id-\' + slideCount + \'" name="' . $this->theme_options->get_option_name() . '[homepage_carousel_custom_slides][\' + slideCount + \'][post_id]" value="" min="1" style="width: 100px;" placeholder="留空自动选择">\' +
-                    \'<button type="button" class="button preview-post" data-index="\' + slideCount + \'" style="margin-left: 10px;">预览文章</button>\' +
-                    \'</div>\' +
-                    \'</div>\';
+                var newSlide = '<div class="slide-config" data-index="' + slideCount + '" style="border: 1px solid #ddd; padding: 12px; margin-bottom: 12px; border-radius: 6px; background: #fafafa;">' +
+'<div class="slide-grid" style="display:flex; gap:16px; align-items:stretch;">' +
+'<div class="slide-left" style="width:180px; flex:0 0 180px; display:flex; flex-direction:column;">' +
+'<label style="margin-bottom:6px;"><strong>图片</strong></label>' +
+'<div class="carousel-image-preview" style="margin:6px 0; min-height:100px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px dashed #ddd; border-radius:4px; overflow:hidden;"></div>' +
+'<input type="hidden" name="' + opt + '[homepage_carousel_custom_slides][' + slideCount + '][image_id]" value="" class="carousel-image-id-input">' +
+'<div style="display:flex; gap:8px; margin-top:6px;">' +
+'<button type="button" class="button carousel-select-image" data-index="' + slideCount + '">选择图片</button>' +
+'</div>' +
+'</div>' +
+'<div class="slide-right" style="flex:1; display:flex; flex-direction:column; gap:10px;">' +
+'<div><label for="slide-title-' + slideCount + '"><strong>标题</strong></label><br>' +
+'<input type="text" id="slide-title-' + slideCount + '" name="' + opt + '[homepage_carousel_custom_slides][' + slideCount + '][title]" value="" style="width: 100%;" placeholder="输入标题（可选，留空将使用文章标题）"></div>' +
+'<div><label for="slide-link-' + slideCount + '"><strong>链接</strong></label><br>' +
+'<input type="url" id="slide-link-' + slideCount + '" name="' + opt + '[homepage_carousel_custom_slides][' + slideCount + '][link]" value="" style="width: 100%;" placeholder="输入链接（可选，留空将使用文章链接）"></div>' +
+'<div><label for="post-id-' + slideCount + '"><strong>文章ID（可选）</strong></label><br>' +
+'<input type="number" id="post-id-' + slideCount + '" name="' + opt + '[homepage_carousel_custom_slides][' + slideCount + '][post_id]" value="" min="1" style="width: 120px;" placeholder="留空不绑定">' +
+'<button type="button" class="button preview-post" data-index="' + slideCount + '" style="margin-left: 10px;">预览文章</button></div>' +
+'</div>' +
+'</div>' +
+'</div>';
 
                 container.append(newSlide);
             });
@@ -468,7 +484,7 @@ class Xinyun_Homepage_Settings {
                 }
             });
         })(jQuery);
-        </script>';
+        </script>
+        <?php
     }
 }
-

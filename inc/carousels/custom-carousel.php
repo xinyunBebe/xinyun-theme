@@ -89,6 +89,14 @@ class Xinyun_Custom_Carousel extends Xinyun_Carousel_Base {
                 continue;
             }
 
+            // 覆盖手动输入的标题与链接
+            if (!empty($slide_config['title'])) {
+                $slide_data['title'] = $slide_config['title'];
+            }
+            if (!empty($slide_config['link'])) {
+                $slide_data['link'] = $slide_config['link'];
+            }
+
             $slides[] = $slide_data;
         }
 
