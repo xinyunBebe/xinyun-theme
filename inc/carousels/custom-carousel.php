@@ -135,7 +135,7 @@ class Xinyun_Custom_Carousel extends Xinyun_Carousel_Base {
                                     </div>
                                     <?php if (!empty($slide['title']) && ($options['show_content'] ?? true)): ?>
                                         <div class="relative z-10 text-white text-center max-w-3xl mx-auto p-6">
-                                            <h3 class="text-3xl md:text-4xl font-bold mb-3 leading-tight">
+                                            <h3 class="text-3xl md:text-4xl font-bold mb-3 leading-tight line-clamp-2">
                                                 <?php if (!empty($slide['link'])): ?>
                                                     <a class="text-white no-underline hover:text-blue-100 transition-colors" href="<?php echo esc_url($slide['link']); ?>"><?php echo esc_html($slide['title']); ?></a>
                                                 <?php else: ?>
@@ -179,4 +179,3 @@ class Xinyun_Custom_Carousel extends Xinyun_Carousel_Base {
         </div>';
     }
 }
-

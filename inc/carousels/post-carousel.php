@@ -147,61 +147,7 @@ class Xinyun_Post_Carousel extends Xinyun_Carousel_Base {
             }
         }
         
-        // 如果自定义轮播图不足，用最新文章补充
-        if (count($slides) < $posts_per_page) {
-            $remaining_count = $posts_per_page - count($slides);
-            
-            $posts = get_posts([
-                'post_type' => 'post',
-                'posts_per_page' => $remaining_count,
-                'post_status' => 'publish',
-                'orderby' => 'date',
-                'order' => 'DESC'
-            ]);
-            
-            foreach ($posts as $post) {
-                // 检查是否已经在自定义轮播图中
-                $already_exists = false;
-                foreach ($slides as $existing_slide) {
-                    if ($existing_slide['id'] == $post->ID) {
-                        $already_exists = true;
-                        break;
-                    }
-                }
-                
-                if (!$already_exists) {
-                    // 优先使用特色图片，如果没有则使用默认特色图片
-                    $thumbnail_id = get_post_thumbnail_id($post->ID);
-                    $image_url = '';
-                    if ($thumbnail_id) {
-                        $image_url = wp_get_attachment_image_url($thumbnail_id, 'large');
-                    }
-                    
-                    // 如果没有特色图片，尝试使用默认特色图片
-                    if (empty($image_url)) {
-                        $theme_options = Xinyun_Theme_Options::get_instance();
-                        $default_featured_image_id = $theme_options->get_option('default_featured_image', '');
-                        if ($default_featured_image_id) {
-                            $image_url = wp_get_attachment_image_url($default_featured_image_id, 'large');
-                        }
-                    }
-                    
-                    // 只要有图片（特色图片或默认图片）就添加到轮播图
-                    if ($image_url) {
-                        $categories = get_the_category($post->ID);
-                        $slides[] = [
-                            'id' => $post->ID,
-                            'title' => get_the_title($post->ID),
-                            'excerpt' => wp_trim_words(get_the_excerpt($post->ID), 20, '...'),
-                            'url' => get_permalink($post->ID),
-                            'image' => $image_url,
-                            'date' => get_the_date('Y年n月j日', $post->ID),
-                            'category' => $categories[0]->name ?? ''
-                        ];
-                    }
-                }
-            }
-        }
+        // 仅显示用户设置的自定义轮播图，不再自动补充最新文章
 
         return $slides;
     }
@@ -253,10 +199,7 @@ class Xinyun_Post_Carousel extends Xinyun_Carousel_Base {
                                         <div class="absolute inset-0 bg-gradient-to-tr from-[#007cba]/70 via-[#005a87]/80 to-black/60"></div>
                                     </div>
                                     <div class="relative z-10 text-white text-center max-w-3xl mx-auto p-6">
-                                        <?php if (!empty($slide['category'])): ?>
-                                            <span class="inline-block bg-white/20 text-white px-4 py-2 rounded-3xl text-sm font-medium mb-4 backdrop-blur border border-white/30"><?php echo $this->esc_output($slide['category']); ?></span>
-                                        <?php endif; ?>
-                                        <h2 class="text-4xl md:text-5xl font-bold mb-4 leading-tight drop-shadow">
+                                        <h2 class="text-4xl md:text-5xl font-bold mb-4 leading-tight drop-shadow line-clamp-2">
                                             <a class="text-white no-underline hover:text-blue-100 transition-colors" href="<?php echo $this->esc_output($slide['url'], 'url'); ?>"><?php echo $this->esc_output($slide['title']); ?></a>
                                         </h2>
                                         <p class="text-lg md:text-xl leading-relaxed mb-6 opacity-95"><?php echo $this->esc_output($slide['excerpt']); ?></p>

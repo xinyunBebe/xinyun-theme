@@ -144,7 +144,7 @@ class Xinyun_Gallery_Carousel extends Xinyun_Carousel_Base {
                                     <?php if (!empty($slide['caption']) || !empty($slide['title'])) : ?>
                                         <div class="slide-info gallery-info relative z-10 text-white text-center max-w-3xl mx-auto p-6">
                                             <?php if (!empty($slide['title'])) : ?>
-                                                <h2 class="slide-title gallery-title text-3xl md:text-4xl font-bold mb-3 leading-tight">
+                                                <h2 class="slide-title gallery-title text-3xl md:text-4xl font-bold mb-3 leading-tight line-clamp-2">
                                                     <?php echo $this->esc_output($slide['title']); ?>
                                                 </h2>
                                             <?php endif; ?>

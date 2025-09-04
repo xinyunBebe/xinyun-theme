@@ -325,16 +325,6 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 .hero-carousel .splide__arrow svg {
     width: 24px;
     height: 24px;
-    /* 关闭任何来自库的旋转，避免左右方向被统一 */
-    transform: none !important;
-}
-
-/* 明确指定左右箭头的SVG不旋转，确保方向正确 */
-.hero-carousel .splide__arrow--prev svg {
-    transform: none !important;
-}
-.hero-carousel .splide__arrow--next svg {
-    transform: none !important;
 }
 
 .hero-carousel .splide__arrow--prev {
