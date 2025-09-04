@@ -401,3 +401,45 @@ function track_post_views ($post_id) {
     set_post_views($post_id);
 }
 add_action( 'wp_head', 'track_post_views');
+
+/**
+ * AJAX处理：获取文章列表用于轮播图选择
+ */
+function get_posts_for_carousel() {
+    // 验证nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'carousel_posts_nonce')) {
+        wp_die('Security check failed');
+    }
+
+    $search_term = sanitize_text_field($_POST['search'] ?? '');
+    
+    $args = [
+        'post_type' => 'post',
+        'post_status' => ['publish', 'private', 'draft'],
+        'posts_per_page' => 50,
+        'orderby' => 'date',
+        'order' => 'DESC'
+    ];
+    
+    // 如果有搜索词，添加搜索参数
+    if (!empty($search_term)) {
+        $args['s'] = $search_term;
+    }
+    
+    $posts = get_posts($args);
+    $post_data = [];
+    
+    foreach ($posts as $post) {
+        $post_data[] = [
+            'ID' => $post->ID,
+            'post_title' => $post->post_title,
+            'post_status' => $post->post_status,
+            'post_date' => get_the_date('Y-m-d', $post),
+            'permalink' => get_permalink($post->ID)
+        ];
+    }
+    
+    wp_send_json_success($post_data);
+}
+
+add_action('wp_ajax_get_posts_for_carousel', 'get_posts_for_carousel');

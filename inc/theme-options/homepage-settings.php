@@ -283,7 +283,6 @@ class Xinyun_Homepage_Settings {
 
         echo '<div style="margin-top: 15px;">';
         echo '<button type="button" id="add-slide" class="button button-secondary">+ 添加轮播图</button>';
-        echo '<button type="button" id="remove-slide" class="button button-secondary" style="margin-left: 10px;">- 删除最后一个</button>';
         echo '</div>';
 
         // 添加JavaScript和CSS
@@ -297,8 +296,13 @@ class Xinyun_Homepage_Settings {
         $image_id = $slide['image_id'] ?? '';
         $post_id = $slide['post_id'] ?? '';
 
-        echo '<div class="slide-config" data-index="' . $index . '" style="border: 1px solid #ddd; padding: 12px; margin-bottom: 12px; border-radius: 6px; background: #fafafa;">';
+        echo '<div class="slide-config" data-index="' . $index . '" style="position: relative; border: 1px solid #ddd; padding: 12px; margin-bottom: 12px; border-radius: 6px; background: #fafafa;">';
+        
+        // 右上角删除按钮
+        echo '<button type="button" class="slide-delete-btn" data-index="' . $index . '" style="position: absolute; top: 8px; right: 8px; background: #dc3232; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: 12px; line-height: 1;" title="删除此轮播图">×</button>';
+        
         echo '<div class="slide-grid" style="display:flex; gap:16px; align-items:stretch;">';
+        
         // 左侧：图片
         echo '<div class="slide-left" style="width: 180px; flex: 0 0 180px; display:flex; flex-direction:column;">';
         echo '<label style="margin-bottom:6px;"><strong>图片</strong></label>';
@@ -320,30 +324,47 @@ class Xinyun_Homepage_Settings {
         echo '</div>';
         echo '</div>'; // slide-left
 
-        // 右侧：标题与链接（可选文章ID）
+        // 右侧：标题与链接（文章选择）
         $title = $slide['title'] ?? '';
         $link = $slide['link'] ?? '';
         echo '<div class="slide-right" style="flex:1; display:flex; flex-direction:column; gap:10px;">';
-        echo '<div><label for="slide-title-' . $index . '"><strong>标题</strong></label><br>';
-        echo '<input type="text" id="slide-title-' . $index . '" name="' . $this->theme_options->get_option_name() . '[' . $field_name . '][' . $index . '][title]" value="' . esc_attr($title) . '" style="width: 100%;" placeholder="输入标题（可选，留空将使用文章标题）"></div>';
-        echo '<div><label for="slide-link-' . $index . '"><strong>链接</strong></label><br>';
-        echo '<input type="url" id="slide-link-' . $index . '" name="' . $this->theme_options->get_option_name() . '[' . $field_name . '][' . $index . '][link]" value="' . esc_attr($link) . '" style="width: 100%;" placeholder="输入链接（可选，留空将使用文章链接）"></div>';
-
-        echo '<div><label for="post-id-' . $index . '"><strong>文章ID（可选）</strong></label><br>';
-        echo '<input type="number" id="post-id-' . $index . '" name="' . $this->theme_options->get_option_name() . '[' . $field_name . '][' . $index . '][post_id]" value="' . esc_attr($post_id) . '" min="1" style="width: 120px;" placeholder="留空不绑定">';
-        echo '<button type="button" class="button preview-post" data-index="' . $index . '" style="margin-left: 10px;">预览文章</button>';
-
+        
+        // 文章选择区域
+        echo '<div class="post-selection-area">';
+        echo '<label><strong>关联文章</strong></label><br>';
+        echo '<div style="display: flex; gap: 10px; align-items: flex-start; margin-top: 6px;">';
+        echo '<button type="button" class="button post-select-btn" data-index="' . $index . '">选择文章</button>';
+        if ($post_id) {
+            echo '<button type="button" class="button post-clear-btn" data-index="' . $index . '" style="background: #dc3232; border-color: #dc3232; color: white;">清除文章</button>';
+        }
+        echo '</div>';
+        
+        // 隐藏的post_id字段
+        echo '<input type="hidden" name="' . $this->theme_options->get_option_name() . '[' . $field_name . '][' . $index . '][post_id]" value="' . esc_attr($post_id) . '" class="post-id-input">';
+        
+        // 显示已选择的文章信息
         if ($post_id) {
             $post = get_post($post_id);
             if ($post) {
-                echo '<div style="margin-top: 8px; padding: 8px; background: #e8f4f8; border-radius: 3px;">';
-                echo '<strong>文章：</strong>' . esc_html($post->post_title) . '（' . esc_html($post->post_status) . '）';
-                echo ' <a href="' . esc_url(get_permalink($post_id)) . '" target="_blank">查看</a>';
+                echo '<div class="selected-post-info" style="margin-top: 8px; padding: 8px; background: #e8f4f8; border-radius: 3px; font-size: 13px;">';
+                echo '<strong>已选择文章：</strong>' . esc_html($post->post_title);
+                echo '<br><small>ID: ' . $post_id . ' | 状态: ' . esc_html($post->post_status) . '</small>';
+                echo ' <a href="' . esc_url(get_permalink($post_id)) . '" target="_blank" style="margin-left: 10px;">预览</a>';
                 echo '</div>';
             } else {
-                echo '<div style="margin-top: 8px; padding: 8px; background: #ffeaa7; border-radius: 3px; color: #d63031;">文章ID不存在</div>';
+                echo '<div class="selected-post-info" style="margin-top: 8px; padding: 8px; background: #ffeaa7; border-radius: 3px; color: #d63031; font-size: 13px;">文章ID不存在: ' . $post_id . '</div>';
             }
         }
+        echo '</div>';
+        
+        // 标题输入
+        echo '<div><label for="slide-title-' . $index . '"><strong>标题</strong></label><br>';
+        echo '<input type="text" id="slide-title-' . $index . '" name="' . $this->theme_options->get_option_name() . '[' . $field_name . '][' . $index . '][title]" value="' . esc_attr($title) . '" style="width: 100%;" placeholder="输入标题（可选，留空将使用文章标题）" class="slide-title-input"></div>';
+        
+        // 链接输入
+        echo '<div><label for="slide-link-' . $index . '"><strong>链接</strong></label><br>';
+        echo '<input type="url" id="slide-link-' . $index . '" name="' . $this->theme_options->get_option_name() . '[' . $field_name . '][' . $index . '][link]" value="' . esc_attr($link) . '" style="width: 100%;" placeholder="输入链接（可选，留空将使用文章链接）" class="slide-link-input"></div>';
+
         echo '</div>'; // slide-right
         echo '</div>'; // slide-grid
         echo '</div>'; // slide-config
@@ -373,6 +394,7 @@ class Xinyun_Homepage_Settings {
             "use strict";
             var opt = "<?php echo esc_js($option_name); ?>";
             var carouselMediaUploader;
+            var postSelectFrame;
 
             // 选择图片按钮点击事件
             $(document).on("click", ".carousel-select-image", function(e) {
@@ -423,19 +445,105 @@ class Xinyun_Homepage_Settings {
                 $(this).remove();
             });
 
-            // 预览文章按钮点击事件
-            $(document).on("click", ".preview-post", function(e) {
+            // 选择文章按钮点击事件
+            $(document).on("click", ".post-select-btn", function(e) {
+                e.preventDefault();
+                var button = $(this);
+                var index = button.data("index");
+                var container = button.closest(".slide-config");
+
+                // 创建文章选择弹窗
+                var postSelectModal = $('<div class="post-select-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100000; display: flex; align-items: center; justify-content: center;">' +
+                '<div class="post-select-content" style="background: white; width: 80%; max-width: 600px; max-height: 70%; border-radius: 6px; padding: 20px; overflow: hidden; display: flex; flex-direction: column;">' +
+                '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #ddd;">' +
+                '<h3 style="margin: 0;">选择文章</h3>' +
+                '<button type="button" class="post-select-close" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #666;">×</button>' +
+                '</div>' +
+                '<div class="post-search-area" style="margin-bottom: 15px;">' +
+                '<input type="text" class="post-search-input" placeholder="搜索文章标题..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">' +
+                '</div>' +
+                '<div class="post-list-container" style="flex: 1; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px;">' +
+                '<div class="post-list-loading" style="text-align: center; padding: 40px; color: #666;">正在加载文章...</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>');
+
+                $('body').append(postSelectModal);
+
+                // 加载文章列表
+                loadPostList(postSelectModal);
+
+                // 搜索功能
+                var searchTimeout;
+                postSelectModal.find('.post-search-input').on('input', function() {
+                    var searchTerm = $(this).val();
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(function() {
+                        loadPostList(postSelectModal, searchTerm);
+                    }, 500);
+                });
+
+                // 关闭弹窗
+                postSelectModal.find('.post-select-close').click(function() {
+                    postSelectModal.remove();
+                });
+                postSelectModal.click(function(e) {
+                    if (e.target === this) {
+                        postSelectModal.remove();
+                    }
+                });
+
+                // 选择文章
+                postSelectModal.on('click', '.post-item', function() {
+                    var postId = $(this).data('post-id');
+                    var postTitle = $(this).find('.post-title').text();
+                    var postUrl = $(this).data('post-url');
+
+                    // 更新容器中的信息
+                    container.find('.post-id-input').val(postId);
+                    
+                    // 自动填入标题和链接（如果当前为空）
+                    var titleInput = container.find('.slide-title-input');
+                    var linkInput = container.find('.slide-link-input');
+                    
+                    if (!titleInput.val()) {
+                        titleInput.val(postTitle);
+                    }
+                    if (!linkInput.val()) {
+                        linkInput.val(postUrl);
+                    }
+
+                    // 更新UI显示
+                    updatePostSelectionUI(container, postId, postTitle, postUrl);
+                    
+                    postSelectModal.remove();
+                });
+            });
+
+            // 清除文章按钮点击事件
+            $(document).on("click", ".post-clear-btn", function(e) {
                 e.preventDefault();
                 var container = $(this).closest(".slide-config");
-                var postId = container.find("input[type=number]").val();
+                container.find('.post-id-input').val('');
+                updatePostSelectionUI(container, '', '', '');
+            });
 
-                if (!postId) {
-                    alert("请先输入文章ID");
+            // 删除轮播图按钮点击事件
+            $(document).on("click", ".slide-delete-btn", function(e) {
+                e.preventDefault();
+                var container = $(this).closest(".slide-config");
+                var totalSlides = $("#custom-slides-container .slide-config").length;
+                
+                if (totalSlides <= 1) {
+                    alert("至少需要保留一个轮播图配置");
                     return;
                 }
-
-                var postUrl = "<?php echo esc_js($admin_url); ?>?post=" + postId + "&action=edit";
-                window.open(postUrl, "_blank");
+                
+                if (confirm("确定要删除这个轮播图配置吗？")) {
+                    container.remove();
+                    // 重新索引剩余的slides
+                    reindexSlides();
+                }
             });
 
             // 添加轮播图
@@ -448,41 +556,126 @@ class Xinyun_Homepage_Settings {
                     return;
                 }
 
-                var newSlide = '<div class="slide-config" data-index="' + slideCount + '" style="border: 1px solid #ddd; padding: 12px; margin-bottom: 12px; border-radius: 6px; background: #fafafa;">' +
-'<div class="slide-grid" style="display:flex; gap:16px; align-items:stretch;">' +
-'<div class="slide-left" style="width:180px; flex:0 0 180px; display:flex; flex-direction:column;">' +
-'<label style="margin-bottom:6px;"><strong>图片</strong></label>' +
-'<div class="carousel-image-preview" style="margin:6px 0; min-height:100px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px dashed #ddd; border-radius:4px; overflow:hidden;"></div>' +
-'<input type="hidden" name="' + opt + '[homepage_carousel_custom_slides][' + slideCount + '][image_id]" value="" class="carousel-image-id-input">' +
-'<div style="display:flex; gap:8px; margin-top:6px;">' +
-'<button type="button" class="button carousel-select-image" data-index="' + slideCount + '">选择图片</button>' +
-'</div>' +
-'</div>' +
-'<div class="slide-right" style="flex:1; display:flex; flex-direction:column; gap:10px;">' +
-'<div><label for="slide-title-' + slideCount + '"><strong>标题</strong></label><br>' +
-'<input type="text" id="slide-title-' + slideCount + '" name="' + opt + '[homepage_carousel_custom_slides][' + slideCount + '][title]" value="" style="width: 100%;" placeholder="输入标题（可选，留空将使用文章标题）"></div>' +
-'<div><label for="slide-link-' + slideCount + '"><strong>链接</strong></label><br>' +
-'<input type="url" id="slide-link-' + slideCount + '" name="' + opt + '[homepage_carousel_custom_slides][' + slideCount + '][link]" value="" style="width: 100%;" placeholder="输入链接（可选，留空将使用文章链接）"></div>' +
-'<div><label for="post-id-' + slideCount + '"><strong>文章ID（可选）</strong></label><br>' +
-'<input type="number" id="post-id-' + slideCount + '" name="' + opt + '[homepage_carousel_custom_slides][' + slideCount + '][post_id]" value="" min="1" style="width: 120px;" placeholder="留空不绑定">' +
-'<button type="button" class="button preview-post" data-index="' + slideCount + '" style="margin-left: 10px;">预览文章</button></div>' +
-'</div>' +
-'</div>' +
-'</div>';
-
-                container.append(newSlide);
+                var newSlideHTML = generateSlideHTML(slideCount);
+                container.append(newSlideHTML);
             });
 
-            // 删除最后一个轮播图
-            $("#remove-slide").click(function() {
-                var slides = $("#custom-slides-container .slide-config");
+            // 生成新轮播图HTML
+            function generateSlideHTML(index) {
+                return '<div class="slide-config" data-index="' + index + '" style="position: relative; border: 1px solid #ddd; padding: 12px; margin-bottom: 12px; border-radius: 6px; background: #fafafa;">' +
+                '<button type="button" class="slide-delete-btn" data-index="' + index + '" style="position: absolute; top: 8px; right: 8px; background: #dc3232; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: 12px; line-height: 1;" title="删除此轮播图">×</button>' +
+                '<div class="slide-grid" style="display:flex; gap:16px; align-items:stretch;">' +
+                '<div class="slide-left" style="width:180px; flex:0 0 180px; display:flex; flex-direction:column;">' +
+                '<label style="margin-bottom:6px;"><strong>图片</strong></label>' +
+                '<div class="carousel-image-preview" style="margin:6px 0; min-height:100px; display:flex; align-items:center; justify-content:center; background:#fff; border:1px dashed #ddd; border-radius:4px; overflow:hidden;"></div>' +
+                '<input type="hidden" name="' + opt + '[homepage_carousel_custom_slides][' + index + '][image_id]" value="" class="carousel-image-id-input">' +
+                '<div style="display:flex; gap:8px; margin-top:6px;">' +
+                '<button type="button" class="button carousel-select-image" data-index="' + index + '">选择图片</button>' +
+                '</div>' +
+                '</div>' +
+                '<div class="slide-right" style="flex:1; display:flex; flex-direction:column; gap:10px;">' +
+                '<div class="post-selection-area">' +
+                '<label><strong>关联文章</strong></label><br>' +
+                '<div style="display: flex; gap: 10px; align-items: flex-start; margin-top: 6px;">' +
+                '<button type="button" class="button post-select-btn" data-index="' + index + '">选择文章</button>' +
+                '</div>' +
+                '<input type="hidden" name="' + opt + '[homepage_carousel_custom_slides][' + index + '][post_id]" value="" class="post-id-input">' +
+                '</div>' +
+                '<div><label><strong>标题</strong></label><br>' +
+                '<input type="text" name="' + opt + '[homepage_carousel_custom_slides][' + index + '][title]" value="" style="width: 100%;" placeholder="输入标题（可选，留空将使用文章标题）" class="slide-title-input"></div>' +
+                '<div><label><strong>链接</strong></label><br>' +
+                '<input type="url" name="' + opt + '[homepage_carousel_custom_slides][' + index + '][link]" value="" style="width: 100%;" placeholder="输入链接（可选，留空将使用文章链接）" class="slide-link-input"></div>' +
+                '</div>' +
+                '</div>' +
+                '</div>';
+            }
 
-                if (slides.length > 1) {
-                    slides.last().remove();
+            // 重新索引轮播图
+            function reindexSlides() {
+                $("#custom-slides-container .slide-config").each(function(newIndex) {
+                    var $slide = $(this);
+                    $slide.attr('data-index', newIndex);
+                    
+                    // 更新所有相关的name属性和id
+                    $slide.find('input[name*="[image_id]"]').attr('name', opt + '[homepage_carousel_custom_slides][' + newIndex + '][image_id]');
+                    $slide.find('input[name*="[post_id]"]').attr('name', opt + '[homepage_carousel_custom_slides][' + newIndex + '][post_id]');
+                    $slide.find('input[name*="[title]"]').attr('name', opt + '[homepage_carousel_custom_slides][' + newIndex + '][title]');
+                    $slide.find('input[name*="[link]"]').attr('name', opt + '[homepage_carousel_custom_slides][' + newIndex + '][link]');
+                    
+                    // 更新按钮的data-index
+                    $slide.find('.slide-delete-btn, .carousel-select-image, .post-select-btn, .post-clear-btn').attr('data-index', newIndex);
+                });
+            }
+
+            // 加载文章列表
+            function loadPostList(modal, searchTerm) {
+                var listContainer = modal.find('.post-list-container');
+                listContainer.html('<div class="post-list-loading" style="text-align: center; padding: 40px; color: #666;">正在加载文章...</div>');
+
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'get_posts_for_carousel',
+                        search: searchTerm || '',
+                        nonce: '<?php echo wp_create_nonce('carousel_posts_nonce'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success && response.data) {
+                            var html = '';
+                            $.each(response.data, function(i, post) {
+                                html += '<div class="post-item" data-post-id="' + post.ID + '" data-post-url="' + post.permalink + '" style="padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; transition: background-color 0.2s;">' +
+                                '<div class="post-title" style="font-weight: 600; margin-bottom: 4px;">' + post.post_title + '</div>' +
+                                '<div style="font-size: 12px; color: #666;">ID: ' + post.ID + ' | 状态: ' + post.post_status + ' | 日期: ' + post.post_date + '</div>' +
+                                '</div>';
+                            });
+                            
+                            if (html) {
+                                listContainer.html(html);
+                                
+                                // 添加hover效果
+                                listContainer.find('.post-item').hover(
+                                    function() { $(this).css('background-color', '#f0f0f0'); },
+                                    function() { $(this).css('background-color', 'white'); }
+                                );
+                            } else {
+                                listContainer.html('<div style="text-align: center; padding: 40px; color: #666;">没有找到文章</div>');
+                            }
+                        } else {
+                            listContainer.html('<div style="text-align: center; padding: 40px; color: #dc3232;">加载失败，请重试</div>');
+                        }
+                    },
+                    error: function() {
+                        listContainer.html('<div style="text-align: center; padding: 40px; color: #dc3232;">加载失败，请重试</div>');
+                    }
+                });
+            }
+
+            // 更新文章选择UI
+            function updatePostSelectionUI(container, postId, postTitle, postUrl) {
+                var selectionArea = container.find('.post-selection-area');
+                var buttonArea = selectionArea.find('div').first();
+                
+                if (postId) {
+                    // 显示清除按钮
+                    if (!buttonArea.find('.post-clear-btn').length) {
+                        buttonArea.append('<button type="button" class="button post-clear-btn" data-index="' + container.data('index') + '" style="background: #dc3232; border-color: #dc3232; color: white;">清除文章</button>');
+                    }
+                    
+                    // 显示已选择的文章信息
+                    selectionArea.find('.selected-post-info').remove();
+                    buttonArea.after('<div class="selected-post-info" style="margin-top: 8px; padding: 8px; background: #e8f4f8; border-radius: 3px; font-size: 13px;">' +
+                        '<strong>已选择文章：</strong>' + postTitle +
+                        '<br><small>ID: ' + postId + '</small>' +
+                        ' <a href="' + postUrl + '" target="_blank" style="margin-left: 10px;">预览</a>' +
+                        '</div>');
                 } else {
-                    alert("至少需要保留一个轮播图配置");
+                    // 移除清除按钮和文章信息
+                    buttonArea.find('.post-clear-btn').remove();
+                    selectionArea.find('.selected-post-info').remove();
                 }
-            });
+            }
+
         })(jQuery);
         </script>
         <?php
