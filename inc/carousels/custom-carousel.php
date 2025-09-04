@@ -123,7 +123,7 @@ class Xinyun_Custom_Carousel extends Xinyun_Carousel_Base {
                  data-pagination="<?php echo $show_pagination ? 'true' : 'false'; ?>"
                  data-height="<?php echo esc_attr($options['height']); ?>"
                  data-mobile-height="<?php echo esc_attr($options['mobile_height']); ?>">
-            <div class="splide relative overflow-hidden rounded-xl shadow-xl" style="height: <?php echo esc_attr($options['height']); ?>;">
+            <div class="splide carousel-hover-group relative overflow-hidden rounded-xl shadow-xl" style="height: <?php echo esc_attr($options['height']); ?>;">
                 <div class="splide__track">
                     <ul class="splide__list">
                         <?php foreach ($slides as $slide): ?>
@@ -131,10 +131,10 @@ class Xinyun_Custom_Carousel extends Xinyun_Carousel_Base {
                                 <div class="relative w-full h-full flex items-center justify-center">
                                     <div class="absolute inset-0 overflow-hidden">
                                         <img class="w-full h-full object-cover" src="<?php echo esc_url($slide['image_url']); ?>" alt="<?php echo esc_attr($slide['title']); ?>" loading="lazy">
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
+                                        <div class="slide-overlay absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
                                     </div>
                                     <?php if (!empty($slide['title']) && ($options['show_content'] ?? true)): ?>
-                                        <div class="relative z-10 text-white text-center max-w-3xl mx-auto p-6">
+                                        <div class="slide-info relative z-10 text-white text-center max-w-3xl mx-auto p-6">
                                             <h3 class="text-3xl md:text-4xl font-bold mb-3 leading-tight line-clamp-2">
                                                 <?php if (!empty($slide['link'])): ?>
                                                     <a class="text-white no-underline hover:text-blue-100 transition-colors" href="<?php echo esc_url($slide['link']); ?>"><?php echo esc_html($slide['title']); ?></a>

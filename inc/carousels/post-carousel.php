@@ -188,7 +188,7 @@ class Xinyun_Post_Carousel extends Xinyun_Carousel_Base {
                  data-pagination="<?php echo $show_pagination ? 'true' : 'false'; ?>"
                  data-height="<?php echo esc_attr($options['height']); ?>"
                  data-mobile-height="<?php echo esc_attr($options['mobile_height']); ?>">
-            <div class="splide relative overflow-hidden rounded-xl shadow-xl" style="height: <?php echo esc_attr($options['height']); ?>;" role="group" aria-label="文章轮播图">
+            <div class="splide carousel-hover-group relative overflow-hidden rounded-xl shadow-xl" style="height: <?php echo esc_attr($options['height']); ?>;" role="group" aria-label="文章轮播图">
                 <div class="splide__track">
                     <ul class="splide__list">
                         <?php foreach ($slides as $slide): ?>
@@ -196,9 +196,9 @@ class Xinyun_Post_Carousel extends Xinyun_Carousel_Base {
                                 <div class="relative w-full h-full flex items-center justify-center">
                                     <div class="absolute inset-0 overflow-hidden">
                                         <img class="w-full h-full object-cover" src="<?php echo $this->esc_output($slide['image'], 'url'); ?>" alt="<?php echo $this->esc_output($slide['title'], 'attr'); ?>" loading="lazy">
-                                        <div class="absolute inset-0 bg-gradient-to-tr from-[#007cba]/70 via-[#005a87]/80 to-black/60"></div>
+                                        <div class="slide-overlay absolute inset-0 bg-gradient-to-tr from-[#007cba]/70 via-[#005a87]/80 to-black/60"></div>
                                     </div>
-                                    <div class="relative z-10 text-white text-center max-w-3xl mx-auto p-6">
+                                    <div class="slide-info relative z-10 text-white text-center max-w-3xl mx-auto p-6">
                                         <h2 class="text-4xl md:text-5xl font-bold mb-4 leading-tight drop-shadow line-clamp-2">
                                             <a class="text-white no-underline hover:text-blue-100 transition-colors" href="<?php echo $this->esc_output($slide['url'], 'url'); ?>"><?php echo $this->esc_output($slide['title']); ?></a>
                                         </h2>

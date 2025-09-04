@@ -95,6 +95,27 @@
 
 /* 头部组件的自定义样式 */
 @layer components {
+  /* 轮播悬停显隐：默认隐藏所有 UI，仅展示图片；悬停/聚焦时显示 */
+  .carousel-hover-group .slide-info,
+  .carousel-hover-group .splide__arrows,
+  .carousel-hover-group .splide__pagination,
+  .carousel-hover-group .slide-overlay {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--default-transition-duration, .15s) var(--default-transition-timing-function, cubic-bezier(.4,0,.2,1)), transform var(--default-transition-duration, .15s) var(--default-transition-timing-function, cubic-bezier(.4,0,.2,1));
+  }
+
+  .carousel-hover-group:hover .slide-info,
+  .carousel-hover-group:focus-within .slide-info,
+  .carousel-hover-group:hover .splide__arrows,
+  .carousel-hover-group:focus-within .splide__arrows,
+  .carousel-hover-group:hover .splide__pagination,
+  .carousel-hover-group:focus-within .splide__pagination,
+  .carousel-hover-group:hover .slide-overlay,
+  .carousel-hover-group:focus-within .slide-overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
   /* 头部固定定位和背景 */
   .site-header {
     @apply fixed top-0 left-0 right-0 w-full z-[999] transition-all duration-300;

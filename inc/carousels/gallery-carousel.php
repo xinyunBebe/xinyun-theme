@@ -129,7 +129,7 @@ class Xinyun_Gallery_Carousel extends Xinyun_Carousel_Base {
                  data-pagination="<?php echo $options['pagination'] ? 'true' : 'false'; ?>"
                  data-height="<?php echo esc_attr($options['height']); ?>"
                  data-mobile-height="<?php echo esc_attr($options['mobile_height']); ?>">
-            <div class="splide relative overflow-hidden rounded-xl shadow-xl" role="group" aria-label="图片轮播图" style="height: <?php echo esc_attr($options['height']); ?>;">
+            <div class="splide carousel-hover-group relative overflow-hidden rounded-xl shadow-xl" role="group" aria-label="图片轮播图" style="height: <?php echo esc_attr($options['height']); ?>;">
                 <div class="splide__track">
                     <ul class="splide__list">
                         <?php foreach ($slides as $slide) : ?>
