@@ -106,8 +106,24 @@ class Xinyun_Post_Carousel extends Xinyun_Carousel_Base {
                             $featured_image = get_the_post_thumbnail_url($post, 'large');
                             if ($featured_image) {
                                 $image_url = $featured_image;
+                            } else {
+                                // 如果文章也没有特色图片，使用默认特色图片
+                                $theme_options = Xinyun_Theme_Options::get_instance();
+                                $default_featured_image_id = $theme_options->get_option('default_featured_image', '');
+                                if ($default_featured_image_id) {
+                                    $image_url = wp_get_attachment_image_url($default_featured_image_id, 'large');
+                                }
                             }
                         }
+                    }
+                }
+                
+                // 如果还是没有图片，使用默认特色图片
+                if (empty($image_url)) {
+                    $theme_options = Xinyun_Theme_Options::get_instance();
+                    $default_featured_image_id = $theme_options->get_option('default_featured_image', '');
+                    if ($default_featured_image_id) {
+                        $image_url = wp_get_attachment_image_url($default_featured_image_id, 'large');
                     }
                 }
                 
@@ -154,13 +170,23 @@ class Xinyun_Post_Carousel extends Xinyun_Carousel_Base {
                 }
                 
                 if (!$already_exists) {
-                    // 优先使用特色图片，如果没有则跳过
+                    // 优先使用特色图片，如果没有则使用默认特色图片
                     $thumbnail_id = get_post_thumbnail_id($post->ID);
                     $image_url = '';
                     if ($thumbnail_id) {
                         $image_url = wp_get_attachment_image_url($thumbnail_id, 'large');
                     }
                     
+                    // 如果没有特色图片，尝试使用默认特色图片
+                    if (empty($image_url)) {
+                        $theme_options = Xinyun_Theme_Options::get_instance();
+                        $default_featured_image_id = $theme_options->get_option('default_featured_image', '');
+                        if ($default_featured_image_id) {
+                            $image_url = wp_get_attachment_image_url($default_featured_image_id, 'large');
+                        }
+                    }
+                    
+                    // 只要有图片（特色图片或默认图片）就添加到轮播图
                     if ($image_url) {
                         $categories = get_the_category($post->ID);
                         $slides[] = [
@@ -191,6 +217,10 @@ class Xinyun_Post_Carousel extends Xinyun_Carousel_Base {
         $slides = $this->get_slides();
         
         if (empty($slides)) {
+            // 调试：如果没有幻灯片数据，返回调试信息（仅在WP_DEBUG时显示）
+            if (WP_DEBUG) {
+                return '<!-- 调试：没有轮播图数据可显示 -->';
+            }
             return '';
         }
 

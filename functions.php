@@ -345,8 +345,19 @@ function xinyun_render_carousel(): string {
     try {
         $carousel_manager = Xinyun_Carousel_Manager::get_instance();
         $result = $carousel_manager->render_homepage_carousel();
+        
+        // 调试：如果结果为空，返回一个调试信息
+        if (empty($result) && WP_DEBUG) {
+            $theme_options = Xinyun_Theme_Options::get_instance();
+            $carousel_type = $theme_options->get_option('homepage_carousel_type', 'post');
+            return '<!-- 调试：轮播图类型=' . esc_html($carousel_type) . ', 结果为空 -->';
+        }
+        
         return $result;
     } catch (Exception $e) {
+        if (WP_DEBUG) {
+            return '<!-- 轮播图错误: ' . esc_html($e->getMessage()) . ' -->';
+        }
         return '';
     }
 }
