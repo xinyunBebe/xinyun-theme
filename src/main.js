@@ -1,6 +1,10 @@
 // WordPress主题的JavaScript入口文件
 console.log('🎉 Xinyun Theme with Vite & Tailwind CSS v4 loaded successfully!');
 
+// 引入 Splide（本地依赖）
+import Splide from '@splidejs/splide';
+import '@splidejs/splide/css';
+
 // 检查CSS是否正确加载
 const commentsArea = document.querySelector('.comments-area');
 if (commentsArea) {
@@ -27,6 +31,41 @@ if (commentsArea) {
 
 // 评论组件的交互逻辑
 document.addEventListener('DOMContentLoaded', function() {
+  // 统一初始化：所有标记为 data-carousel="splide" 的容器
+  const containers = document.querySelectorAll('[data-carousel="splide"]');
+  containers.forEach((container) => {
+    const el = container.querySelector('.splide');
+    if (!el) return;
+
+    const type = container.getAttribute('data-type') || 'loop';
+    const autoplay = container.getAttribute('data-autoplay') !== 'false';
+    const interval = parseInt(container.getAttribute('data-interval') || '5000', 10);
+    const arrows = container.getAttribute('data-arrows') !== 'false';
+    const pagination = container.getAttribute('data-pagination') !== 'false';
+    const height = container.getAttribute('data-height') || '400px';
+    const mobileHeight = container.getAttribute('data-mobile-height') || '300px';
+    const lazyLoad = container.getAttribute('data-lazy') || 'nearby';
+
+    try {
+      new Splide(el, {
+        type,
+        autoplay,
+        interval,
+        pauseOnHover: true,
+        pauseOnFocus: true,
+        resetProgress: false,
+        height,
+        cover: true,
+        arrows,
+        pagination,
+        lazyLoad,
+        breakpoints: { 768: { height: mobileHeight, arrows: false } },
+      }).mount();
+    } catch (e) {
+      console.error('Splide init failed:', e);
+    }
+  });
+
   // 评论表单增强
   const commentForm = document.getElementById('commentform');
   if (commentForm) {

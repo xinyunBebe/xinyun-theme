@@ -1,8 +1,8 @@
 <?php
 /**
- * Xinyun Theme - 自定义轮播图
+ * Xinyun Theme - 自定义轮播图（Splide 方案）
  *
- * 基于用户自定义配置的轮播图类型
+ * 基于用户自定义配置的轮播图类型（本地集成 Splide）
  *
  * @package Xinyun
  * @since 1.0.0
@@ -13,53 +13,26 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-/**
- * 自定义轮播图类
- */
 class Xinyun_Custom_Carousel extends Xinyun_Carousel_Base {
-    
-    /**
-     * 轮播图类型标识
-     * 
-     * @var string
-     */
     protected string $type = 'custom';
-    
-    /**
-     * 轮播图名称
-     * 
-     * @var string
-     */
     protected string $name = '自定义轮播图';
-    
-    /**
-     * 轮播图描述
-     * 
-     * @var string
-     */
     protected string $description = '严格按照用户配置显示，只显示已配置的轮播图';
-    
-    /**
-     * 默认配置选项
-     * 
-     * @var array
-     */
+
     protected array $default_options = [
         'height' => '400px',
         'mobile_height' => '300px',
         'show_content' => true,
-        'show_meta' => true
+        'show_meta' => true,
+        'autoplay' => true,
+        'interval' => 5000,
+        'arrows' => true,
+        'pagination' => true,
     ];
-    
+
     /**
      * 获取轮播图数据
-     * 实现抽象方法 get_slides
-     *
-     * @param array $options 配置选项
-     * @return array
      */
     public function get_slides(array $options = []): array {
-        // 获取主题选项
         if (class_exists('Xinyun_Theme_Options')) {
             $theme_options = Xinyun_Theme_Options::get_instance();
             $all_options = $theme_options->get_options();
@@ -67,370 +40,143 @@ class Xinyun_Custom_Carousel extends Xinyun_Carousel_Base {
         } else {
             $custom_slides = get_option('xinyun_theme_options', [])['homepage_carousel_custom_slides'] ?? [];
         }
-        
+
         $slides = [];
-        
+
         foreach ($custom_slides as $slide_config) {
-            // 跳过空配置
             if (empty($slide_config['image_id']) && empty($slide_config['post_id'])) {
                 continue;
             }
-            
-            // 获取图片URL
+
             $image_url = '';
             if (!empty($slide_config['image_id'])) {
                 $image_url = wp_get_attachment_image_url($slide_config['image_id'], 'large');
             }
-            
+
             $slide_data = [
-                'id' => 'custom_' . md5($slide_config['image_id'] . $slide_config['post_id']),
+                'id' => 'custom_' . md5(($slide_config['image_id'] ?? '') . ($slide_config['post_id'] ?? '')),
                 'image_url' => $image_url,
                 'title' => '',
                 'content' => '',
                 'link' => '',
-                'meta' => []
+                'meta' => [],
             ];
-            
-            // 如果指定了文章ID，获取文章信息
+
             if (!empty($slide_config['post_id'])) {
                 $post = get_post($slide_config['post_id']);
-                
                 if ($post && $post->post_status === 'publish') {
                     $slide_data['title'] = get_the_title($post);
                     $slide_data['content'] = get_the_excerpt($post);
                     $slide_data['link'] = get_permalink($post);
-                    
-                    // 如果没有自定义图片，尝试使用文章特色图片
+
                     if (empty($slide_data['image_url'])) {
                         $featured_image = get_the_post_thumbnail_url($post, 'large');
                         if ($featured_image) {
                             $slide_data['image_url'] = $featured_image;
                         }
                     }
-                    
-                    // 元信息
+
                     if ($options['show_meta'] ?? true) {
                         $slide_data['meta'] = [
                             'date' => get_the_date('Y-m-d', $post),
                             'author' => get_the_author_meta('display_name', $post->post_author),
-                            'categories' => get_the_category_list(', ', '', '', $post->ID)
                         ];
                     }
                 }
             }
-            
-            // 如果没有图片，跳过这个slide
+
             if (empty($slide_data['image_url'])) {
                 continue;
             }
-            
+
             $slides[] = $slide_data;
         }
-        
+
         return $slides;
     }
-    
+
     /**
-     * 渲染轮播图HTML
-     * 
-     * @param array $options 配置选项
-     * @return string
+     * 渲染轮播图（Splide DOM + Tailwind 样式）
      */
     public function render(array $options = []): string {
-        $options = array_merge($this->default_options, $options);
+        $options = $this->get_options($options);
         $slides = $this->get_slides($options);
-        
+
         if (empty($slides)) {
             return $this->render_empty_state();
         }
-        
-        $carousel_id = 'xinyun-custom-carousel-' . uniqid();
+
+        $section_id = 'custom-carousel';
         $autoplay = $options['autoplay'] ?? true;
-        $interval = $options['interval'] ?? 5000;
-        $show_arrows = $options['arrows'] ?? true;
-        $show_pagination = $options['pagination'] ?? true;
-        
+        $interval = (int) ($options['interval'] ?? 5000);
+        $show_arrows = (bool) ($options['arrows'] ?? true);
+        $show_pagination = (bool) ($options['pagination'] ?? true);
+
         ob_start();
         ?>
-        <div class="xinyun-carousel custom-carousel" id="<?php echo esc_attr($carousel_id); ?>" 
-             data-autoplay="<?php echo $autoplay ? 'true' : 'false'; ?>" 
-             data-interval="<?php echo esc_attr($interval); ?>">
-            
-            <div class="carousel-container">
-                <div class="carousel-track">
-                    <?php foreach ($slides as $index => $slide): ?>
-                        <div class="carousel-slide <?php echo $index === 0 ? 'active' : ''; ?>" 
-                             data-slide="<?php echo esc_attr($index); ?>">
-                            
-                            <div class="slide-image">
-                                <img src="<?php echo esc_url($slide['image_url']); ?>" 
-                                     alt="<?php echo esc_attr($slide['title']); ?>"
-                                     loading="<?php echo $index === 0 ? 'eager' : 'lazy'; ?>">
-                                
-                                <?php if (!empty($slide['title']) && ($options['show_content'] ?? true)): ?>
-                                    <div class="slide-overlay">
-                                        <div class="slide-content">
-                                            <h3 class="slide-title">
+        <section id="<?php echo esc_attr($section_id); ?>" class="xinyun-carousel custom-carousel relative w-full mb-8"
+                 data-carousel="splide"
+                 data-type="loop"
+                 data-autoplay="<?php echo $autoplay ? 'true' : 'false'; ?>"
+                 data-interval="<?php echo esc_attr($interval); ?>"
+                 data-arrows="<?php echo $show_arrows ? 'true' : 'false'; ?>"
+                 data-pagination="<?php echo $show_pagination ? 'true' : 'false'; ?>"
+                 data-height="<?php echo esc_attr($options['height']); ?>"
+                 data-mobile-height="<?php echo esc_attr($options['mobile_height']); ?>">
+            <div class="splide relative overflow-hidden rounded-xl shadow-xl" style="height: <?php echo esc_attr($options['height']); ?>;">
+                <div class="splide__track">
+                    <ul class="splide__list">
+                        <?php foreach ($slides as $slide): ?>
+                            <li class="splide__slide">
+                                <div class="relative w-full h-full flex items-center justify-center">
+                                    <div class="absolute inset-0 overflow-hidden">
+                                        <img class="w-full h-full object-cover" src="<?php echo esc_url($slide['image_url']); ?>" alt="<?php echo esc_attr($slide['title']); ?>" loading="lazy">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
+                                    </div>
+                                    <?php if (!empty($slide['title']) && ($options['show_content'] ?? true)): ?>
+                                        <div class="relative z-10 text-white text-center max-w-3xl mx-auto p-6">
+                                            <h3 class="text-3xl md:text-4xl font-bold mb-3 leading-tight">
                                                 <?php if (!empty($slide['link'])): ?>
-                                                    <a href="<?php echo esc_url($slide['link']); ?>">
-                                                        <?php echo esc_html($slide['title']); ?>
-                                                    </a>
+                                                    <a class="text-white no-underline hover:text-blue-100 transition-colors" href="<?php echo esc_url($slide['link']); ?>"><?php echo esc_html($slide['title']); ?></a>
                                                 <?php else: ?>
                                                     <?php echo esc_html($slide['title']); ?>
                                                 <?php endif; ?>
                                             </h3>
-                                            
                                             <?php if (!empty($slide['content'])): ?>
-                                                <p class="slide-excerpt"><?php echo esc_html($slide['content']); ?></p>
+                                                <p class="text-base md:text-lg opacity-95 mb-4"><?php echo esc_html($slide['content']); ?></p>
                                             <?php endif; ?>
-                                            
                                             <?php if (!empty($slide['meta']) && ($options['show_meta'] ?? true)): ?>
-                                                <div class="slide-meta">
+                                                <div class="flex items-center justify-center gap-4 text-sm opacity-90">
                                                     <?php if (!empty($slide['meta']['date'])): ?>
-                                                        <span class="meta-date">📅 <?php echo esc_html($slide['meta']['date']); ?></span>
+                                                        <span>📅 <?php echo esc_html($slide['meta']['date']); ?></span>
                                                     <?php endif; ?>
-                                                    
                                                     <?php if (!empty($slide['meta']['author'])): ?>
-                                                        <span class="meta-author">👤 <?php echo esc_html($slide['meta']['author']); ?></span>
+                                                        <span>👤 <?php echo esc_html($slide['meta']['author']); ?></span>
                                                     <?php endif; ?>
                                                 </div>
                                             <?php endif; ?>
                                         </div>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </div>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
                 </div>
-                
-                <?php if ($show_arrows && count($slides) > 1): ?>
-                    <button class="carousel-arrow carousel-prev" aria-label="上一张">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-                        </svg>
-                    </button>
-                    <button class="carousel-arrow carousel-next" aria-label="下一张">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                        </svg>
-                    </button>
-                <?php endif; ?>
             </div>
-            
-            <?php if ($show_pagination && count($slides) > 1): ?>
-                <div class="carousel-pagination">
-                    <?php for ($i = 0; $i < count($slides); $i++): ?>
-                        <button class="pagination-dot <?php echo $i === 0 ? 'active' : ''; ?>" 
-                                data-slide="<?php echo esc_attr($i); ?>" 
-                                aria-label="第<?php echo $i + 1; ?>张">
-                        </button>
-                    <?php endfor; ?>
-                </div>
-            <?php endif; ?>
-        </div>
-        
-        <style>
-            .custom-carousel {
-                position: relative;
-                margin-bottom: 30px;
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            }
-            
-            .custom-carousel .carousel-container {
-                position: relative;
-                height: <?php echo esc_attr($options['height']); ?>;
-                overflow: hidden;
-            }
-            
-            .custom-carousel .carousel-slide {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                opacity: 0;
-                transition: opacity 0.5s ease-in-out;
-            }
-            
-            .custom-carousel .carousel-slide.active {
-                opacity: 1;
-            }
-            
-            .custom-carousel .slide-image {
-                position: relative;
-                width: 100%;
-                height: 100%;
-            }
-            
-            .custom-carousel .slide-image img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                object-position: center;
-            }
-            
-            .custom-carousel .slide-overlay {
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                background: linear-gradient(transparent, rgba(0,0,0,0.7));
-                padding: 40px 30px 30px;
-                color: white;
-            }
-            
-            .custom-carousel .slide-title {
-                margin: 0 0 10px 0;
-                font-size: 24px;
-                font-weight: 700;
-                line-height: 1.3;
-            }
-            
-            .custom-carousel .slide-title a {
-                color: white;
-                text-decoration: none;
-                transition: opacity 0.3s ease;
-            }
-            
-            .custom-carousel .slide-title a:hover {
-                opacity: 0.8;
-            }
-            
-            .custom-carousel .slide-excerpt {
-                margin: 0 0 15px 0;
-                font-size: 16px;
-                line-height: 1.5;
-                opacity: 0.9;
-            }
-            
-            .custom-carousel .slide-meta {
-                display: flex;
-                gap: 20px;
-                font-size: 14px;
-                opacity: 0.8;
-            }
-            
-            /* 轮播图箭头样式 */
-            .custom-carousel .carousel-arrow {
-                position: absolute;
-                top: 50%;
-                transform: translateY(-50%);
-                background: rgba(255, 255, 255, 0.9);
-                border: none;
-                border-radius: 50%;
-                width: 50px;
-                height: 50px;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #333;
-                transition: background-color 0.3s ease, color 0.3s ease;
-                z-index: 2;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            }
-            
-            .custom-carousel .carousel-arrow:hover {
-                background: rgba(255, 255, 255, 1);
-                color: #007cba;
-                /* 不改变位置，只改变颜色 */
-            }
-            
-            .custom-carousel .carousel-prev {
-                left: 20px;
-            }
-            
-            .custom-carousel .carousel-next {
-                right: 20px;
-            }
-            
-            .custom-carousel .carousel-arrow svg {
-                width: 24px;
-                height: 24px;
-            }
-            
-            /* 分页指示器样式 */
-            .custom-carousel .carousel-pagination {
-                position: absolute;
-                bottom: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                display: flex;
-                gap: 10px;
-                z-index: 2;
-            }
-            
-            .custom-carousel .pagination-dot {
-                width: 12px;
-                height: 12px;
-                border-radius: 50%;
-                border: 2px solid rgba(255, 255, 255, 0.5);
-                background: transparent;
-                cursor: pointer;
-                transition: all 0.3s ease;
-            }
-            
-            .custom-carousel .pagination-dot.active,
-            .custom-carousel .pagination-dot:hover {
-                background: white;
-                border-color: white;
-            }
-            
-            @media (max-width: 768px) {
-                .custom-carousel .carousel-container {
-                    height: <?php echo esc_attr($options['mobile_height']); ?>;
+            <style>
+                @media (max-width: 768px) {
+                    #<?php echo esc_js($section_id); ?> .splide { height: <?php echo esc_attr($options['mobile_height']); ?>; }
                 }
-                
-                .custom-carousel .slide-overlay {
-                    padding: 20px 20px 20px;
-                }
-                
-                .custom-carousel .slide-title {
-                    font-size: 20px;
-                }
-                
-                .custom-carousel .slide-excerpt {
-                    font-size: 14px;
-                }
-                
-                .custom-carousel .slide-meta {
-                    flex-direction: column;
-                    gap: 5px;
-                }
-                
-                .custom-carousel .carousel-arrow {
-                    width: 40px;
-                    height: 40px;
-                }
-                
-                .custom-carousel .carousel-prev {
-                    left: 10px;
-                }
-                
-                .custom-carousel .carousel-next {
-                    right: 10px;
-                }
-                
-                .custom-carousel .carousel-pagination {
-                    bottom: 10px;
-                }
-            }
-        </style>
+            </style>
+        </section>
         <?php
-        
         return ob_get_clean();
     }
-    
-    /**
-     * 渲染空状态
-     * 
-     * @return string
-     */
+
     private function render_empty_state(): string {
         return '<div class="xinyun-carousel-empty">
             <p>🎭 还没有配置自定义轮播图。请在主题设置中添加图片和文章配置。</p>
         </div>';
     }
 }
+

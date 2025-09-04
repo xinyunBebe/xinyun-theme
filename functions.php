@@ -153,6 +153,12 @@ function xinyun_scripts() {
     
     // Tailwind CSS (通过Vite构建) - 最后加载，确保优先级最高
     wp_enqueue_style('xinyun-tailwind', get_template_directory_uri() . '/dist/main.css', array('xinyun-style'), XINYUN_VERSION);
+
+    // 如果JS入口打包了CSS（例如 Splide 的样式通过 JS 引入），同时加载 dist/js.css
+    $js_css_path = get_template_directory() . '/dist/js.css';
+    if (file_exists($js_css_path)) {
+        wp_enqueue_style('xinyun-vite-js-css', get_template_directory_uri() . '/dist/js.css', array('xinyun-tailwind'), XINYUN_VERSION);
+    }
     
     // Vite构建的JavaScript文件
     wp_enqueue_script('xinyun-vite-js', get_template_directory_uri() . '/dist/js.js', array(), XINYUN_VERSION, true);

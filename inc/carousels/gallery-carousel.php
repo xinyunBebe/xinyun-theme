@@ -116,40 +116,47 @@ class Xinyun_Gallery_Carousel extends Xinyun_Carousel_Base {
             return '';
         }
 
-        $effect_class = $options['fade_effect'] ? 'fade' : 'slide';
+        $type = $options['fade_effect'] ? 'fade' : 'loop';
 
         ob_start();
         ?>
-        <section class="hero-carousel gallery-carousel" id="gallery-carousel">
-            <div class="splide splide--<?php echo $this->esc_output($effect_class, 'attr'); ?>" role="group" aria-label="图片轮播图">
+        <section class="hero-carousel gallery-carousel relative w-full mb-8" id="gallery-carousel"
+                 data-carousel="splide"
+                 data-type="<?php echo esc_attr($type); ?>"
+                 data-autoplay="<?php echo $options['autoplay'] ? 'true' : 'false'; ?>"
+                 data-interval="<?php echo esc_attr($options['interval']); ?>"
+                 data-arrows="<?php echo $options['arrows'] ? 'true' : 'false'; ?>"
+                 data-pagination="<?php echo $options['pagination'] ? 'true' : 'false'; ?>"
+                 data-height="<?php echo esc_attr($options['height']); ?>"
+                 data-mobile-height="<?php echo esc_attr($options['mobile_height']); ?>">
+            <div class="splide relative overflow-hidden rounded-xl shadow-xl" role="group" aria-label="图片轮播图" style="height: <?php echo esc_attr($options['height']); ?>;">
                 <div class="splide__track">
                     <ul class="splide__list">
                         <?php foreach ($slides as $slide) : ?>
                             <li class="splide__slide">
                                 <div class="slide-content gallery-slide">
-                                    <div class="slide-image">
-                                        <img src="<?php echo $this->esc_output($slide['image'], 'url'); ?>" 
-                                             alt="<?php echo $this->esc_output($slide['alt'] ?: $slide['title'], 'attr'); ?>"
-                                             loading="lazy">
-                                        <div class="slide-overlay gallery-overlay"></div>
+                                    <div class="slide-image absolute inset-0 overflow-hidden">
+                                        <img class="w-full h-full object-cover" src="<?php echo $this->esc_output($slide['image'], 'url'); ?>" 
+                                             alt="<?php echo $this->esc_output($slide['alt'] ?: $slide['title'], 'attr'); ?>" loading="lazy">
+                                        <div class="slide-overlay gallery-overlay absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
                                     </div>
                                     
                                     <?php if (!empty($slide['caption']) || !empty($slide['title'])) : ?>
-                                        <div class="slide-info gallery-info">
+                                        <div class="slide-info gallery-info relative z-10 text-white text-center max-w-3xl mx-auto p-6">
                                             <?php if (!empty($slide['title'])) : ?>
-                                                <h2 class="slide-title gallery-title">
+                                                <h2 class="slide-title gallery-title text-3xl md:text-4xl font-bold mb-3 leading-tight">
                                                     <?php echo $this->esc_output($slide['title']); ?>
                                                 </h2>
                                             <?php endif; ?>
                                             
                                             <?php if (!empty($slide['caption'])) : ?>
-                                                <p class="slide-caption">
+                                                <p class="slide-caption text-base md:text-lg opacity-95 mb-4">
                                                     <?php echo $this->esc_output($slide['caption']); ?>
                                                 </p>
                                             <?php endif; ?>
                                             
-                                            <div class="slide-meta">
-                                                <time><?php echo $this->esc_output($slide['date']); ?></time>
+                                            <div class="slide-meta flex items-center justify-center gap-4 text-sm opacity-90">
+                                                <time class="text-blue-100"><?php echo $this->esc_output($slide['date']); ?></time>
                                             </div>
                                         </div>
                                     <?php endif; ?>
@@ -158,57 +165,13 @@ class Xinyun_Gallery_Carousel extends Xinyun_Carousel_Base {
                         <?php endforeach; ?>
                     </ul>
                 </div>
-                
-                <?php if ($options['pagination']) : ?>
-                <!-- 分页指示器 -->
-                <div class="splide__pagination"></div>
-                <?php endif; ?>
-                
-                <?php if ($options['arrows']) : ?>
-                <!-- 导航箭头 -->
-                <div class="splide__arrows">
-                    <button class="splide__arrow splide__arrow--prev" aria-label="上一张">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-                        </svg>
-                    </button>
-                    <button class="splide__arrow splide__arrow--next" aria-label="下一张">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                        </svg>
-                    </button>
-                </div>
-                <?php endif; ?>
             </div>
-        </section>
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                if (typeof Splide !== 'undefined') {
-                    const config = <?php echo $this->esc_output([
-                        'type' => $options['fade_effect'] ? 'fade' : 'loop',
-                        'autoplay' => $options['autoplay'],
-                        'interval' => $options['interval'],
-                        'pauseOnHover' => $options['pauseOnHover'],
-                        'pauseOnFocus' => true,
-                        'resetProgress' => false,
-                        'height' => $options['height'],
-                        'cover' => $options['cover'],
-                        'arrows' => $options['arrows'],
-                        'pagination' => $options['pagination'],
-                        'lazyLoad' => 'nearby',
-                        'breakpoints' => [
-                            768 => [
-                                'height' => $options['mobile_height'],
-                                'arrows' => false,
-                            ]
-                        ]
-                    ], 'js'); ?>;
-                    
-                    new Splide('#gallery-carousel .splide', config).mount();
+            <style>
+                @media (max-width: 768px) {
+                    #gallery-carousel .splide { height: <?php echo esc_attr($options['mobile_height']); ?>; }
                 }
-            });
-        </script>
+            </style>
+        </section>
         <?php
         
         return ob_get_clean();

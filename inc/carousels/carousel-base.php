@@ -119,23 +119,7 @@ abstract class Xinyun_Carousel_Base {
      * 子类可以重写此方法加载特定资源
      */
     public function enqueue_assets(): void {
-        // 默认加载Splide.js
-        if (!wp_script_is('splide-js', 'enqueued')) {
-            wp_enqueue_style(
-                'splide-css',
-                'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.3/dist/css/splide.min.css',
-                array(),
-                '4.1.3'
-            );
-            
-            wp_enqueue_script(
-                'splide-js',
-                'https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.3/dist/js/splide.min.js',
-                array(),
-                '4.1.3',
-                true
-            );
-        }
+        // 不再从 CDN 加载 Splide，由 Vite 构建的 dist/js.css 和 dist/js.js 提供样式与脚本
     }
     
     /**

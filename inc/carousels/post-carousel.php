@@ -215,47 +215,54 @@ class Xinyun_Post_Carousel extends Xinyun_Carousel_Base {
     public function render(array $options = []): string {
         $options = $this->get_options($options);
         $slides = $this->get_slides();
-        
+
         if (empty($slides)) {
-            // 调试：如果没有幻灯片数据，返回调试信息（仅在WP_DEBUG时显示）
             if (WP_DEBUG) {
                 return '<!-- 调试：没有轮播图数据可显示 -->';
             }
             return '';
         }
 
+        $autoplay = $options['autoplay'];
+        $interval = (int) $options['interval'];
+        $show_arrows = (bool) $options['arrows'];
+        $show_pagination = (bool) $options['pagination'];
+
+        // 使用固定容器ID，便于前端初始化
+        $carousel_id = 'hero-carousel';
+
         ob_start();
         ?>
-        <section class="hero-carousel post-carousel" id="hero-carousel">
-            <div class="splide" role="group" aria-label="文章轮播图">
+        <section id="<?php echo esc_attr($carousel_id); ?>" class="hero-carousel post-carousel relative w-full mb-8"
+                 data-carousel="splide"
+                 data-type="loop"
+                 data-autoplay="<?php echo $autoplay ? 'true' : 'false'; ?>"
+                 data-interval="<?php echo esc_attr($interval); ?>"
+                 data-arrows="<?php echo $show_arrows ? 'true' : 'false'; ?>"
+                 data-pagination="<?php echo $show_pagination ? 'true' : 'false'; ?>"
+                 data-height="<?php echo esc_attr($options['height']); ?>"
+                 data-mobile-height="<?php echo esc_attr($options['mobile_height']); ?>">
+            <div class="splide relative overflow-hidden rounded-xl shadow-xl" style="height: <?php echo esc_attr($options['height']); ?>;" role="group" aria-label="文章轮播图">
                 <div class="splide__track">
                     <ul class="splide__list">
-                        <?php foreach ($slides as $slide) : ?>
+                        <?php foreach ($slides as $slide): ?>
                             <li class="splide__slide">
-                                <div class="slide-content">
-                                    <div class="slide-image">
-                                        <img src="<?php echo $this->esc_output($slide['image'], 'url'); ?>" 
-                                             alt="<?php echo $this->esc_output($slide['title'], 'attr'); ?>"
-                                             loading="lazy">
-                                        <div class="slide-overlay"></div>
+                                <div class="relative w-full h-full flex items-center justify-center">
+                                    <div class="absolute inset-0 overflow-hidden">
+                                        <img class="w-full h-full object-cover" src="<?php echo $this->esc_output($slide['image'], 'url'); ?>" alt="<?php echo $this->esc_output($slide['title'], 'attr'); ?>" loading="lazy">
+                                        <div class="absolute inset-0 bg-gradient-to-tr from-[#007cba]/70 via-[#005a87]/80 to-black/60"></div>
                                     </div>
-                                    <div class="slide-info">
-                                        <?php if (!empty($slide['category'])) : ?>
-                                            <span class="slide-category"><?php echo $this->esc_output($slide['category']); ?></span>
+                                    <div class="relative z-10 text-white text-center max-w-3xl mx-auto p-6">
+                                        <?php if (!empty($slide['category'])): ?>
+                                            <span class="inline-block bg-white/20 text-white px-4 py-2 rounded-3xl text-sm font-medium mb-4 backdrop-blur border border-white/30"><?php echo $this->esc_output($slide['category']); ?></span>
                                         <?php endif; ?>
-                                        <h2 class="slide-title">
-                                            <a href="<?php echo $this->esc_output($slide['url'], 'url'); ?>">
-                                                <?php echo $this->esc_output($slide['title']); ?>
-                                            </a>
+                                        <h2 class="text-4xl md:text-5xl font-bold mb-4 leading-tight drop-shadow">
+                                            <a class="text-white no-underline hover:text-blue-100 transition-colors" href="<?php echo $this->esc_output($slide['url'], 'url'); ?>"><?php echo $this->esc_output($slide['title']); ?></a>
                                         </h2>
-                                        <p class="slide-excerpt">
-                                            <?php echo $this->esc_output($slide['excerpt']); ?>
-                                        </p>
-                                        <div class="slide-meta">
-                                            <time><?php echo $this->esc_output($slide['date']); ?></time>
-                                            <a href="<?php echo $this->esc_output($slide['url'], 'url'); ?>" class="slide-read-more">
-                                                阅读更多
-                                            </a>
+                                        <p class="text-lg md:text-xl leading-relaxed mb-6 opacity-95"><?php echo $this->esc_output($slide['excerpt']); ?></p>
+                                        <div class="flex flex-col items-center gap-4">
+                                            <time class="text-blue-100"><?php echo $this->esc_output($slide['date']); ?></time>
+                                            <a href="<?php echo $this->esc_output($slide['url'], 'url'); ?>" class="inline-block px-4 py-2 rounded-full bg-white/20 text-white no-underline backdrop-blur border border-white/30 hover:bg-white/30 transition shadow">阅读更多</a>
                                         </div>
                                     </div>
                                 </div>
@@ -263,57 +270,21 @@ class Xinyun_Post_Carousel extends Xinyun_Carousel_Base {
                         <?php endforeach; ?>
                     </ul>
                 </div>
-                
-                <?php if ($options['pagination']) : ?>
-                <!-- 分页指示器 -->
-                <div class="splide__pagination"></div>
-                <?php endif; ?>
-                
-                <?php if ($options['arrows']) : ?>
-                <!-- 导航箭头 -->
-                <div class="splide__arrows">
-                    <button class="splide__arrow splide__arrow--prev" aria-label="上一张">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-                        </svg>
-                    </button>
-                    <button class="splide__arrow splide__arrow--next" aria-label="下一张">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                        </svg>
-                    </button>
-                </div>
-                <?php endif; ?>
             </div>
-        </section>
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                if (typeof Splide !== 'undefined') {
-                    new Splide('#hero-carousel .splide', <?php echo $this->esc_output([
-                        'type' => 'loop',
-                        'autoplay' => $options['autoplay'],
-                        'interval' => $options['interval'],
-                        'pauseOnHover' => $options['pauseOnHover'],
-                        'pauseOnFocus' => true,
-                        'resetProgress' => false,
-                        'height' => $options['height'],
-                        'cover' => $options['cover'],
-                        'arrows' => $options['arrows'],
-                        'pagination' => $options['pagination'],
-                        'lazyLoad' => $options['lazyLoad'],
-                        'breakpoints' => [
-                            768 => [
-                                'height' => $options['mobile_height'],
-                                'arrows' => false,
-                            ]
-                        ]
-                    ], 'js'); ?>).mount();
+            <style>
+                @media (max-width: 768px) {
+                    #<?php echo esc_js($carousel_id); ?> .splide { height: <?php echo esc_attr($options['mobile_height']); ?>; }
                 }
-            });
-        </script>
+            </style>
+        </section>
         <?php
-        
         return ob_get_clean();
+    }
+
+    /**
+     * 覆盖基础资源加载，避免依赖外部CDN（Splide）。
+     */
+    public function enqueue_assets(): void {
+        // 不加载任何外部库，渲染中已包含必要样式/脚本。
     }
 }
